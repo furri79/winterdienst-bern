@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="36" fill="#102d49"/><text x="96" y="133" font-size="118" text-anchor="middle" fill="white">❄</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#143d66"/><stop offset="1" stop-color="#081c32"/></linearGradient><linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#386b87"/><stop offset="1" stop-color="#19364e"/></linearGradient></defs>
+<rect width="512" height="512" rx="116" fill="url(#bg)"/>
+<circle cx="405" cy="108" r="100" fill="#62bce8" opacity=".1"/>
+<path d="M96 391L195 250h123l98 141c20 29-2 62-35 62H132c-33 0-55-33-36-62z" fill="url(#road)" stroke="#95d5ed" stroke-width="12"/>
+<path d="M254 283v34m0 29v31m0 28v17" stroke="#e9f5fc" stroke-width="17" stroke-linecap="round"/>
+<g stroke="#f7fdff" stroke-width="18" stroke-linecap="round"><path d="M254 65v170M169 107l170 85M169 192l170-85"/><path d="M254 65l-24 26m24-26l24 26M254 235l-24-26m24 26l24-26M169 107l5 35m-5-35l34-8M339 192l-34 8m34-8l-5-35M169 192l34 8m-34-8l5-35M339 107l-34-8m34 8l-5 35"/></g>
+<circle cx="254" cy="149" r="19" fill="#caefff"/><path d="M141 416h226" stroke="#b3e8ff" stroke-width="9" stroke-linecap="round" opacity=".5"/></svg>
