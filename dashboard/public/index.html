@@ -1,0 +1,2078 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meteo Dashboard</title>
+  <meta name="theme-color" content="#123454" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Winterdienst" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=5" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png?v=5" />
+  <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon-167x167.png?v=5" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png?v=5" />
+  <link rel="shortcut icon" href="/favicon.ico?v=5" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192-v3.png" />
+  <link rel="manifest" href="/manifest.webmanifest?v=5" />
+  <style>
+    :root{
+      --navy:#123454;
+      --navy-2:#0d2a45;
+      --blue:#2f7cc0;
+      --sky:#8fd0f2;
+      --teal:#1f8a88;
+      --green:#2da45d;
+      --green-bg:#eaf6ee;
+      --red:#d34d4d;
+      --amber:#e6a937;
+      --panel:#ffffff;
+      --bg:#eef4f8;
+      --line:#d7e3ec;
+      --text:#17324a;
+      --muted:#5a748a;
+      --shadow:0 8px 28px rgba(16,46,73,.08);
+      --radius:20px;
+      --radius-sm:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:inherit}
+    .page{width:100%;max-width:1500px;min-width:0;margin:0 auto;padding:20px}
+    html{scrollbar-gutter:stable}
+    .page>.hero{width:100%;max-width:100%;min-width:0}
+    .hero .brand,.hero .brand>div:last-child{min-width:0}
+    .hero .brand-badge{flex-shrink:0}
+    .hero .subtitle,.hero .account-strip,.hero .developer-joke{overflow-wrap:anywhere}
+    .hero{
+      position:relative;overflow:hidden;border-radius:24px;box-shadow:var(--shadow);
+      background:
+        linear-gradient(180deg,rgba(10,34,58,.25),rgba(10,34,58,.55)),
+        linear-gradient(120deg,#1a4d7a 0%,#0f2a44 100%);
+      color:#fff;padding:22px 28px 26px 28px;
+      min-height:120px;
+    }
+    .hero-road-scene{position:absolute;inset:auto 13% 0 auto;width:58%;height:100%;min-width:430px;opacity:.22;pointer-events:none}
+    .hero h1{font-weight:850;text-shadow:0 2px 12px #09213644}
+    .hero .author{letter-spacing:.4px}
+    .account-strip{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center;font-size:12px;margin-top:8px;color:#d7ecfb;max-width:650px}
+    .account-strip a{color:white;white-space:nowrap}
+    .outlook-disclosure>summary{cursor:pointer;font-size:23px;line-height:1.3;font-weight:800;color:var(--navy)}
+    .outlook-disclosure[open]>summary{margin-bottom:16px}
+    .user-admin{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;background:#f7fafc}
+    .user-admin>summary{cursor:pointer;font-size:18px;font-weight:800;color:var(--navy)}.user-admin[open]>summary{margin-bottom:14px}.user-admin h3{margin-top:0}.user-admin label{display:block;font-weight:700;font-size:14px;margin-bottom:5px}
+    .invite-row{display:flex;gap:10px;flex-wrap:wrap}.user-admin input{min-width:0;width:100%;font:inherit;padding:10px 12px;border:1px solid #b7cbdc;border-radius:8px;box-sizing:border-box}.invite-row input{flex:1;min-width:200px}
+    .invite-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}.admin-mail-link{display:inline-block;border:1px solid #b7cbdc;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:700}
+    .user-admin td button{font-size:13px;padding:6px 10px;background:#fff0ef;color:#96242a;border:1px solid #e5b6b6}
+    @media(max-width:700px){.hero-road-scene{right:-20%;width:100%;opacity:.13}}
+    .hero-top{position:relative;z-index:1;display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+    .brand{display:flex;gap:18px;align-items:flex-start}
+    .brand-badge{width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:30px;backdrop-filter:blur(4px)}
+    .hero h1{margin:0;font-size:32px;line-height:1.15;letter-spacing:-.5px}
+    .subtitle{font-size:19px;font-weight:700;margin-top:4px}
+    .tagline{opacity:.92;margin-top:4px;font-size:15px}
+    .hero-meta{display:grid;gap:8px;text-align:right;min-width:280px}
+    .hero-meta .bigtime{font-size:40px;font-weight:800;line-height:1}
+    #refreshForm{margin:0;justify-self:end}
+    #refreshBtn{position:relative;touch-action:manipulation;min-height:44px;cursor:pointer;padding:10px 14px;background:#fff;color:var(--navy);justify-self:end}
+    .location-picker{display:flex;align-items:center;gap:14px;margin-top:18px;padding:14px 18px;flex-wrap:wrap}
+    .location-picker label{font-weight:800}
+    .location-picker select{flex:1;min-width:200px;min-height:44px;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
+    #refreshBtn:disabled{opacity:.7;cursor:wait}
+    .hero-meta .small{font-size:15px;opacity:.95}
+
+    .official-warnings{border-top:4px solid #427b9d}
+    .official-warnings h2{font-size:21px}
+    #officialWarningsStatus{margin:8px 0;font-weight:700;color:#3a5870}
+    .official-warning-list{display:grid;gap:12px;margin-top:12px}
+    .official-warning{border:1px solid #e2bf5b;border-left:5px solid #d3a322;border-radius:12px;padding:14px 16px;background:#fff9e5;break-inside:avoid-page}
+    .official-warning[data-level="3"]{background:#fff0dc;border-color:#ce7318}
+    .official-warning[data-level="4"]{background:#ffeded;border-color:#be3030}
+    .official-warning[data-level="5"]{background:#f6e9f4;border-color:#85266f}
+    .official-warning h3{margin:0;font-size:18px}
+    .official-warning .validity{font-size:13px;font-weight:700;margin:8px 0;color:#425669}
+    .official-warning .warning-text{white-space:pre-line;font-size:14px;line-height:1.55;margin:8px 0 0}
+    .official-warnings[data-state="unavailable"]{border-top-color:#8695a1}
+    .official-warnings[data-state="clear"]{border-top-color:#488069}
+    .warning-origin{font-size:12px;font-weight:800;letter-spacing:.5px;color:#526b7f;margin-bottom:8px}
+    .warning-legend{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px;font-size:12px}
+    .warning-legend span{padding:5px 9px;border-radius:8px;background:#f1f4f6}
+    .warning-legend .yellow{background:#fff5ce;color:#785d00}.warning-legend .orange{background:#fff0dc;color:#80500a}.warning-legend .red{background:#ffeded;color:#96242a}.warning-legend .purple{background:#f6e9f4;color:#85266f}
+    .warning-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .warning-card{border:1px solid var(--line);border-radius:16px;background:#f4f7fa;padding:16px}
+    .warning-card h3{margin:0 0 12px;font-size:19px}
+    .warning-state{font-size:17px;font-weight:850}
+    .warning-card p{font-size:14px;margin:8px 0 0}
+    .warning-card[data-level="quiet"]{background:#f3f6f8;border-color:#d6dfe6}
+    .warning-card[data-level="quiet"] .warning-state{color:#526b7f}
+    .warning-card[data-snow-color="green"]{background:#eef7f0;border-color:#b8d8c2}
+    .warning-card[data-snow-color="green"] .warning-state{color:#247348}
+    .warning-card[data-level="watch"]{background:#fff0dc;border-color:#d48c2c}
+    .warning-card[data-level="watch"] .warning-state{color:#80500a}
+    .warning-card[data-level="alert"]{background:#ffeded;border:2px solid #d34d4d}
+    .warning-card[data-level="alert"] .warning-state{color:#a51d1d}
+    .warning-card[data-level="unknown"] .warning-state{color:#526b7f}
+    @media(max-width:900px){.warning-grid{grid-template-columns:1fr}}
+    .section{margin-top:18px}
+    .warning-overview{display:contents}
+    @media screen and (min-width:1100px){
+      .warning-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px;align-items:stretch}
+      .warning-overview>.section{margin-top:0;min-width:0}
+      .warning-overview #ampelBox{height:100%;box-sizing:border-box}
+      .warning-overview .ampel p{font-size:16px;line-height:1.45}
+      .warning-overview .ampel .station-note{font-size:13px;margin-top:12px}
+      .warning-overview .light{flex-shrink:0}
+    }
+    .top-grid{display:grid;grid-template-columns:1.7fr 1.1fr 1fr;gap:18px;align-items:stretch}
+    .cards-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-content:start}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .panel-pad{padding:18px 20px}
+    .metric{position:relative;padding:12px;border-radius:14px;background:linear-gradient(180deg,#f8fbfd,#f1f6fa);border:1px solid #e4edf4;min-height:112px;display:flex;flex-direction:column;justify-content:space-between;gap:7px;min-width:0}
+    .metric .label{font-size:12px;color:var(--muted);font-weight:700;padding-right:29px}
+    .metric .value{font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.2;overflow-wrap:anywhere;margin-top:4px}
+    .metric .sub{font-size:12px;line-height:1.4;color:var(--muted)}
+    .metric .icon{position:absolute;right:10px;top:10px;font-size:27px;line-height:1}
+    .metric[data-assessment="orange"]{background:#fff3de;border:2px solid #d28a12;color:#764706}
+    .metric[data-assessment="red"]{background:#ffeded;border:2px solid #c33338;color:#96242a}
+    .metric[data-assessment="yellow"]{background:#fff8d8;border:2px solid #d4b43c;color:#796000}
+    .metric[data-assessment="purple"]{background:#f5e7f4;border:2px solid #8a357c;color:#76256a}
+    .metric[data-assessment="green"]{background:#eef7f0;border-color:#b8d8c2}
+    .metric[data-assessment="yellow"] .sub,.metric[data-assessment="purple"] .sub{color:inherit}
+    .metric[data-assessment="blue"]{background:#edf5fc;border-color:#93b8d8}
+    .metric[data-assessment="neutral"],.metric[data-assessment="unknown"]{background:#f1f4f6;border-color:#c7d1d8}
+    .metric[data-assessment="orange"] .sub,.metric[data-assessment="red"] .sub{color:inherit}
+    .metric .assessment{font-size:11px;font-weight:800;line-height:1.4;margin-top:6px;padding-top:6px;border-top:1px solid currentColor}
+    .precip-criteria{margin-top:14px;font-size:13px;color:#526b7f}
+    .precip-criteria summary{cursor:pointer;font-weight:750}
+    .precip-criteria li{margin:5px 0}
+    .ampel{background:var(--green-bg);border:1px solid #bfe1c6;min-height:unset;padding:18px 20px;display:flex;flex-direction:column}
+    .ampel-title{font-size:18px;font-weight:900;letter-spacing:.3px}
+    .ampel-main{display:flex;gap:16px;align-items:center;margin:18px 0 12px}
+    .light{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#4cd079 0 35%,#2ea45f 36% 100%);box-shadow:inset 0 0 0 8px rgba(255,255,255,.55)}
+    .ampel-status{font-size:50px;font-weight:900;color:#1a9b51;line-height:1}
+    .ampel p{margin:0;font-size:18px;line-height:1.45}
+    .situation-brief{background:rgba(255,255,255,.72);border:1px solid #23475e26;border-radius:14px;padding:14px;margin-top:16px}
+    .situation-heading{display:flex;gap:9px;align-items:center;margin-bottom:8px}
+    .situation-heading>span{font-size:27px;line-height:1}
+    .situation-heading h3{font-size:16px;margin:0;color:var(--navy)}
+    .ampel .situation-brief p{font-size:14px;line-height:1.5;color:#29495c}
+    .situation-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:11px 0}
+    .situation-stat{background:#ffffffb8;border-radius:9px;padding:8px;min-width:0}
+    .situation-stat small{display:block;font-size:11px;color:#526b7f}
+    .situation-stat b{display:block;font-size:16px;margin-top:3px;overflow-wrap:anywhere;color:#193b50}
+    .ampel .situation-brief .situation-period{font-size:11px;color:#526b7f;margin-top:8px}
+    .ampel-criteria{font-size:12px;color:#526b7f;margin-top:12px}
+    .ampel-criteria summary{font-weight:700;cursor:pointer}
+
+    .middle-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-top:18px}
+    .panel h2{margin:0 0 6px 0;font-size:22px;line-height:1.2;letter-spacing:-.3px}
+    .panel .subline{color:var(--muted);font-size:15px;margin-bottom:12px}
+    .report-list{display:grid;gap:16px;margin-top:14px}
+    .report-item{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+    .report-ico{width:40px;height:40px;border-radius:50%;background:#eef5fa;display:grid;place-items:center;font-size:20px}
+    .report-item.no-icon>div{grid-column:2}
+    .report-item b{display:block;color:inherit;margin-bottom:2px;font-size:18px}
+    [data-warning-color="green"],.warn-green,.official-warning[data-level="1"],.metric[data-assessment="green"]{color:#207f49}
+    [data-warning-color="yellow"],.warn-yellow,.official-warning[data-level="2"]{color:#796000}
+    [data-warning-color="orange"],.warn-orange,.official-warning[data-level="3"]{color:#80500a}
+    [data-warning-color="red"],.warn-red,.official-warning[data-level="4"]{color:#96242a}
+    [data-warning-color="purple"],.warn-purple,.official-warning[data-level="5"]{color:#76256a}
+    [data-warning-color="neutral"],[data-warning-color="unknown"],.warn-neutral{color:#526474}
+    .metric[data-assessment] .sub,.metric[data-assessment] .assessment{color:inherit}
+    .radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px;align-items:stretch}
+    .radar-grid>.section{margin-top:0;min-width:0}
+    .radar-grid .radar-frame,#radarBern .radar-frame{display:block;width:100%;max-width:none;height:360px;aspect-ratio:auto;margin:12px 0}
+    @media(max-width:900px){.radar-grid{grid-template-columns:1fr}.radar-grid .radar-frame,#radarBern .radar-frame{height:300px}}
+    @media print{.radar-grid{display:block}#rainMap iframe{display:none!important}#rainMap{break-inside:avoid-page}}
+    .radar-frame{width:100%;aspect-ratio:16/10;border:0;border-radius:16px;background:#dce8f1}
+    .webcam-disclosure>summary{cursor:pointer;font-size:21px;font-weight:800;color:#19364d}
+    .webcam-disclosure>summary>span:not(.tile-title):not(.tile-symbol){font-size:12px;font-weight:500;color:#587186;margin-left:8px}
+    .webcam-content{margin-top:14px}
+    .webcam-frame{max-height:520px}
+    .road-legend{padding:10px 12px;margin-top:12px;border:1px solid #d9e3eb;border-radius:10px;background:#f7fafc;font-size:12px;line-height:1.5;color:#526b7f}
+    .road-legend-levels{display:flex;flex-wrap:wrap;gap:6px 14px;font-weight:750}
+    .road-legend .yellow{color:#796000}.road-legend .orange{color:#80500a}.road-legend .red{color:#96242a}
+    .road-legend p{margin:5px 0 0;font-size:12px}.road-legend details{margin-top:5px}.road-legend summary{cursor:pointer;font-size:12px}
+    .summary-grid{display:grid;gap:16px;margin-top:10px}
+    .summary-item{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:flex-start;padding-top:10px;border-top:1px solid #edf2f5}
+    .summary-item:first-child{border-top:0;padding-top:0}
+    .summary-icon{font-size:34px;line-height:1;text-align:center}
+    .summary-item b{display:block;margin-bottom:2px;font-size:18px}
+
+    .chart-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px}
+    .legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:14px;margin:8px 0 12px}
+    .legend span{display:inline-flex;align-items:center;gap:8px}
+    .swatch{display:inline-block;width:18px;height:4px;border-radius:999px;background:#000}
+    .swatch.bar{width:14px;height:10px;border-radius:3px}
+    .canvas-wrap{width:100%;overflow:auto}
+    canvas{width:100%;height:auto;display:block}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 10px;border-bottom:1px solid #e7eef4;text-align:left;font-size:14px}
+    th{color:#587186;background:#f4f8fb;font-size:13px;text-transform:none}
+    td.small{color:var(--muted)}
+
+    .forecast-36{margin-top:18px}
+    .forecast-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .fcard{border:1px solid #e5edf4;border-radius:16px;background:linear-gradient(180deg,#fbfdff,#f5f9fc);padding:14px 12px}
+    .fcard .slot{font-weight:800;font-size:16px;text-align:center}
+    .fcard .slot-time{display:block;font-size:13px;font-weight:650;color:#526b7f;margin-top:4px}
+    .fcard .ficon{font-size:32px;text-align:center;margin:8px 0 2px}
+    .fcard .temp{text-align:center;font-weight:900;font-size:24px}
+    .fcard .temp{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+    .range-to{font-size:13px;font-weight:600;color:#587186}
+    .fmeta{font-size:14px;color:var(--muted);text-align:center}
+    .pill{display:inline-block;padding:5px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#edf4fb;color:#356fa8;margin-top:8px}
+    .pill.green{background:#eaf6ee;color:#207f49}
+    .pill.orange{background:#fff4df;color:#a16d14}
+    .pill.red{background:#fdebec;color:#af3131}
+    .pill.yellow{background:#fff4c8;color:#796000}.pill.purple{background:#f5e7f4;color:#76256a}
+    .warning-legend .green{background:#eaf6ee;color:#247348}
+    .snow-legend{margin:12px 0 4px;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;padding-bottom:5px}
+    .snow-legend span{white-space:nowrap;flex:0 0 auto;font-size:11px;padding:5px 7px}
+    [hidden]{display:none!important}
+    .source-fresh{color:#207f49!important;background:#eaf6ee;border-radius:8px;padding:6px 9px}
+    .station-card[data-observe="true"] .station-assessment{background:#fff9dc;border-color:#ddc97b;color:#735e05}
+    .climate-maps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .climate-maps img{width:100%;height:auto;border-radius:8px}.climate-maps figure{margin:0;min-width:0}.climate-maps figcaption{font-weight:700;margin:10px 0}
+    @media(max-width:650px){.climate-maps{grid-template-columns:1fr}}
+    .snow-legend-title{font-size:12px;font-weight:750;color:#526b7f;margin-top:12px}
+    .warning-card[data-level="yellow"]{background:#fff8d8;border-color:#d4b43c}
+    .warning-card[data-level="orange"]{background:#fff0dc;border-color:#d48c2c}
+    .warning-card[data-level="red"]{background:#ffeded;border-color:#c33338}
+    .warning-card[data-level="purple"]{background:#f5e7f4;border-color:#8a357c}
+    .warning-card[data-level="yellow"] .warning-state{color:#796000}.warning-card[data-level="orange"] .warning-state{color:#80500a}.warning-card[data-level="red"] .warning-state{color:#96242a}.warning-card[data-level="purple"] .warning-state{color:#76256a}
+
+    .bottom-grid{display:grid;grid-template-columns:1.35fr .95fr;gap:18px;margin-top:18px}
+    .sources{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .source-box{padding:14px;border-radius:16px;background:#f7fbfd;border:1px solid #e4eef5;font-size:14px;color:var(--muted)}
+    .source-box b{display:block;color:var(--text);margin-bottom:5px;font-size:15px}
+    .footer-note{display:flex;gap:12px;align-items:flex-start;color:var(--muted);font-size:14px}
+    .footer-note .info{font-size:22px;line-height:1}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    button{border:0;border-radius:14px;background:#123454;color:#fff;padding:12px 16px;font:700 15px system-ui;cursor:pointer}
+    button.secondary{background:#e8f0f6;color:#17324a}
+
+
+    .station-grid[data-count="1"]{grid-template-columns:minmax(0,1fr);max-width:600px}
+    .station-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .station-card{padding:13px;background:linear-gradient(180deg,#f8fbfe,#eef5fb);border:1px solid #dbe8f2;border-radius:16px;min-width:0}
+    .station-head{display:grid;grid-template-rows:32px auto;align-content:start;align-items:center;gap:6px;min-height:64px}
+    .station-head .station-state{width:fit-content;font-size:11px;padding:4px 7px}
+    .station-card h3{font-size:16px;margin:0;display:flex;align-items:center;gap:8px;overflow-wrap:anywhere}
+    .station-icon{width:23px;height:23px;flex-shrink:0;color:#28758c;padding:5px;box-sizing:content-box;background:#e4f2f5;border-radius:10px}
+    .station-card{border-top:4px solid #28758c;box-shadow:0 5px 18px #153e5510}
+    .station-data small{display:block;color:#526b7f;line-height:1.45}
+    .station-gap{padding:10px 12px;background:#e4edf5;border-radius:10px;font-weight:750;color:#25485e!important}
+    .road-thresholds{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+    .threshold{display:flex;align-items:center;gap:10px;border-radius:12px;padding:12px 16px;border:1px solid}
+    .threshold>span{font-size:26px;line-height:1}
+    .threshold b,.threshold small{display:block}
+    .threshold small{font-size:12px;margin-top:3px}
+    .threshold.orange{background:#fff4df;color:#80500a;border-color:#e7c781}
+    .threshold.red{background:#ffeded;color:#a51d1d;border-color:#e9b1b1}
+    .threshold.yellow{background:#fff9d8;color:#756000;border-color:#d8c36d}
+    .road-thresholds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+    .threshold{align-items:flex-start;min-width:0}
+    .threshold small{line-height:1.5}
+    .surface-hero{display:flex;align-items:center;gap:11px;padding:11px;margin:10px 0;border-radius:13px;background:#eaf1f6;border:1px solid #c6d6e2;min-height:112px;box-sizing:border-box}
+    .surface-art{width:46px;min-width:46px;height:64px}
+    .surface-art svg{display:block;width:100%;height:100%}
+    .surface-copy{min-width:0}
+    .surface-copy small{display:block;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+    .surface-copy .road-condition{display:block;font-size:21px;font-weight:900;line-height:1.2;overflow-wrap:anywhere}
+    .surface-state{display:inline-block;margin-top:5px;font-size:11px;font-weight:850}
+    .surface-detail{font-size:11px;line-height:1.35;margin-top:4px}
+    .station-card[data-surface-level="yellow"] .surface-hero{background:#fff9dc;border-color:#ddc97b;color:#735e05}
+    .station-card[data-surface-level="orange"] .surface-hero{background:#fff0dc;border:2px solid #d48c2c;color:#7a4806}
+    .station-card[data-surface-level="unknown"] .surface-hero{background:#edf1f4;border-color:#ccd5dc;color:#596b78}
+    .station-card[data-surface-level="unknown"] .surface-art{opacity:.5}
+    .surface-wet,.surface-snow,.surface-ice{opacity:0}
+    .station-card[data-surface="wet"] .surface-wet,.station-card[data-surface="damp"] .surface-wet,.station-card[data-surface="snow"] .surface-snow,.station-card[data-surface="slush"] .surface-snow,.station-card[data-surface="slush"] .surface-wet,.station-card[data-surface="ice"] .surface-ice{opacity:1}
+    .station-assessment{padding:10px;border:1px solid #d1dce5;border-radius:10px;background:#f5f8fa;margin-top:9px}
+    .station-assessment b{display:block;font-size:12px}
+    .station-assessment span{display:block;margin-top:4px;font-size:11px;line-height:1.4}
+    .station-assessment .station-gap{background:none;padding:0;margin:5px 0;font-size:12px;color:inherit!important}
+    .station-card[data-data-quality="partial"] .station-assessment{border-style:dashed}
+    .station-card[data-alarm="orange"] .station-assessment{background:#fff0dc;border-color:#d48c2c;color:#7a4806}
+    .station-card[data-alarm="red"] .station-assessment{background:#ffeded;border-color:#c83c3c;color:#98252a}
+    .station-state[data-level="partial"]{background:#fff3bd;color:#756000}
+    .station-data{margin:12px 0}.station-data .num{font-variant-numeric:tabular-nums}
+    @media(max-width:1100px){.road-thresholds{grid-template-columns:1fr}}
+    .station-state{display:inline-flex;gap:6px;align-items:center;font-size:12px;padding:5px 8px;border-radius:99px;background:#edf1f5;color:#526b7f;font-weight:700;white-space:normal}
+    .station-state[data-level="fresh"]{background:#eaf6ee;color:#207f49}
+    .station-state[data-level="stale"]{background:#fff4df;color:#94630e}
+    .station-state[data-level="error"]{background:#fdebec;color:#af3131}
+    .station-data{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+    .station-data div{background:white;border-radius:10px;padding:8px;min-width:0}
+    .station-data small{font-size:11px;line-height:1.3}
+    .station-data .num{display:block;font-size:clamp(16px,1.4vw,22px);font-weight:800;margin-top:4px;line-height:1.25;overflow-wrap:anywhere}
+    .station-data .num[data-unavailable="true"]{font-size:13px}
+    .station-card[data-alarm="red"]{background:#fff0f0;border:2px solid #c62828;box-shadow:0 0 0 3px rgba(198,40,40,.09)}
+    .station-card[data-alarm="red"] .station-data div{background:#ffe0e0;color:#a51d1d}
+    .station-card .station-alarm{color:#a51d1d;font-weight:800;font-size:15px}
+    .station-card[data-alarm="orange"]{background:#fff4df;border:2px solid #e7a232}
+    .station-card[data-alarm="orange"] .station-data div{background:#fff0cf;color:#80500a}
+    .station-card[data-alarm="orange"] .station-alarm{color:#80500a}
+    .station-state[data-level="watch"]{background:#fff0cf;color:#80500a}
+    .road-alarm-summary[data-level="orange"]{background:#fff4df;color:#80500a;border-color:#e7a232}
+    .station-alarm:empty{display:none}
+    .road-alarm-summary{background:#fdebec;color:#a51d1d;border:1px solid #e7a2a2;border-radius:12px;padding:12px 14px;font-weight:800}
+    .station-card p{font-size:11px;color:var(--muted);margin:6px 0 0}
+    .station-note{font-size:13px;color:var(--muted);margin:10px 0 0}
+    @media(max-width:900px){.station-grid{grid-template-columns:1fr}}
+
+    @media (max-width: 1280px){
+      .top-grid,.middle-grid,.chart-grid,.bottom-grid{grid-template-columns:1fr}
+      .cards-grid{grid-template-columns:repeat(3,1fr)}
+      .forecast-strip{grid-template-columns:repeat(3,1fr)}
+      .sources{grid-template-columns:1fr}
+    }
+    @media (max-width: 900px){
+      .hero h1{font-size:28px}
+      .subtitle{font-size:21px}
+      .hero-top{flex-direction:column}
+      .hero-meta{text-align:left;min-width:0}
+      .cards-grid{grid-template-columns:repeat(2,1fr)}
+      .forecast-strip{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width: 620px){
+      .page{padding:12px}
+      .hero{padding:18px}
+      .hero h1{font-size:26px}
+      .cards-grid,.forecast-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .metric{min-height:unset}
+      th,td{padding:8px 7px;font-size:13px}
+    }
+
+    /* Compact header, including iPhone and standalone home-screen display. */
+    .hero{padding:14px 18px;min-height:0;border-radius:18px}
+    .hero-top{gap:12px;align-items:center}
+    .brand{gap:10px;align-items:center}
+    .brand-badge,.brand-badge img{width:40px;height:40px;border-radius:11px!important}
+    .hero h1{font-size:24px;letter-spacing:-.4px}
+    .subtitle{font-size:15px;margin-top:3px}
+    .tagline{display:none}
+    .tagline.author{display:block;font-size:11px!important;margin-top:3px!important}
+    .hero-meta{min-width:0;gap:4px}
+    .hero-meta .bigtime{font-size:26px}
+    .hero-meta .small{font-size:11px}
+    .timezone-label{display:none}
+    #refreshBtn{padding:8px 12px;font-size:13px;border-radius:10px}
+    @media(max-width:900px){
+      .hero-top{flex-direction:column;align-items:stretch;gap:10px}
+      .hero h1{font-size:22px}
+      .subtitle{font-size:13px}
+      .hero-meta{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:left;gap:6px 12px}
+      #todayLabel{grid-row:1;grid-column:1}
+      #nowTime{grid-row:1;grid-column:2;font-size:21px;text-align:right}
+      #lastUpdate{display:none}
+      #refreshForm{grid-row:2;grid-column:2;justify-self:end}
+      #weatherRefreshStatus{grid-row:2;grid-column:1;font-size:10px}
+    }
+    @media(max-width:400px){.hero{padding:12px}.hero h1{font-size:19px}.subtitle{font-size:11px}.brand-badge,.brand-badge img{width:34px;height:34px}}
+
+    .panel{min-width:0}
+    .horizontal-scroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom;overscroll-behavior-x:contain;border-radius:12px}
+    .horizontal-scroll:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+    .chart-with-axes{display:flex;align-items:flex-start;width:100%;min-width:0}
+    .chart-with-axes .chart-axis{flex:0 0 48px;width:48px;height:340px;background:#fff}
+    .chart-with-axes .canvas-wrap{flex:1;min-width:0;width:0;border-radius:0}
+    .canvas-wrap canvas{min-width:850px;max-width:none;height:340px}
+    .hourly-scroll{max-height:420px;overflow-y:auto}
+    .hourly-scroll table{min-width:850px;table-layout:auto}
+    .hourly-scroll th,.hourly-scroll td{white-space:nowrap}
+    .hourly-scroll th:first-child,.hourly-scroll td:first-child{position:sticky;left:0;z-index:1;background:#fff;min-width:145px}
+    .hourly-scroll th{position:sticky;top:0;z-index:2}
+    .hourly-scroll th:first-child{z-index:3;background:#f4f8fb}
+    .hourly-scroll tr.risk-orange td{background:#fff2d6;color:#754b00}
+    .hourly-scroll tr.risk-red td{background:#fde6e6;color:#942626}
+    .hourly-scroll tr.risk-yellow td{background:#fff7d4;color:#796000}
+    .hourly-scroll tr.risk-purple td{background:#f5e7f4;color:#76256a}
+    .hourly-scroll tr.risk-unknown td{background:#edf1f4;color:#526474}
+    .hourly-scroll tr.risk-orange td:first-child{box-shadow:inset 4px 0 #d58a00}
+    .hourly-scroll tr.risk-red td:first-child{box-shadow:inset 4px 0 #c83c3c}
+    .hourly-scroll tr.risk-yellow td:first-child{box-shadow:inset 4px 0 #d4b43c}
+    .hourly-scroll tr.risk-purple td:first-child{box-shadow:inset 4px 0 #8a357c}
+    .hourly-risk{display:block;font-size:11px;font-weight:800;margin-top:3px;max-width:220px;white-space:normal;line-height:1.4}
+    .scroll-hint{font-size:12px;color:var(--muted);margin:6px 0 10px}
+    .model-summary{font-size:14px;font-weight:750;margin-top:14px}
+    .model-details{font-size:14px;margin-top:8px;padding:12px;background:#f5f9fc;border:1px solid var(--line);border-radius:12px}
+    .model-details summary{cursor:pointer;font-weight:700}
+    .model-details p{margin:8px 0 0}
+    .print-only{display:none}
+    @page{size:A4 portrait;margin:12mm;@bottom-right{content:"Seite " counter(page);font:8pt sans-serif;color:#587186}}
+    @media print{
+      #webcamBern iframe,#webcamBlatten iframe{display:none!important}#webcamBern,#webcamBlatten{break-inside:avoid-page}.hero-road-scene{display:none!important}
+      .surface-hero{padding:2mm;gap:2mm;margin:2mm 0;border-radius:2mm}.surface-art{width:9mm;min-width:9mm;height:13mm}.surface-copy .road-condition{font-size:11pt}.surface-copy small,.surface-state,.surface-detail{font-size:7pt}.station-assessment{padding:2mm;margin-top:2mm}.station-assessment b{font-size:8pt}.station-assessment span{font-size:7pt}.station-assessment .station-gap{font-size:8pt}.road-thresholds{grid-template-columns:repeat(3,minmax(0,1fr))}
+      html,body{background:#fff!important;color:#172e40;font-size:10pt;line-height:1.35;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .page{width:100%;max-width:none;padding:0;margin:0}
+      .page .panel,.page .hero{box-shadow:none;border-radius:3mm}
+      .page .panel-pad{padding:4mm}
+      .page .section,.page .middle-grid,.page .chart-grid,.page .bottom-grid{margin-top:4mm}
+      .hero{background:#fff!important;color:#172e40!important;border:1px solid #b8cbd7;min-height:0;padding:4mm}
+      .hero::before,.location-picker,.actions,#refreshForm,#weatherRefreshStatus,#bvision-setup,.scroll-hint,.timezone-label,.hero-meta .bigtime{display:none!important}
+      .hero-top{display:flex;flex-direction:row;align-items:flex-start}
+      .hero h1{font-size:18pt}.hero .subtitle{font-size:11pt}.hero .tagline,.hero .small{font-size:9pt}
+      .hero-meta{min-width:0;text-align:right;display:block}.brand-badge,.brand-badge img{width:12mm!important;height:12mm!important}
+      h2{font-size:14pt;line-height:1.2;break-after:avoid-page;page-break-after:avoid}
+      h3{font-size:11pt;break-after:avoid-page}p{orphans:3;widows:3}
+      .subline,.station-note,.footer-note,.model-summary,.model-details{font-size:9pt}
+      .top-grid,.middle-grid,.chart-grid,.bottom-grid{display:block}
+      .cards-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2mm}
+      .metric{min-height:28mm;padding:2mm;border-radius:2mm}.metric .label{font-size:8pt}.metric .value{font-size:14pt}.metric .sub{font-size:8pt}.metric .icon{font-size:15pt}
+      .ampel{display:block;padding:3mm;min-height:0;break-inside:avoid-page}.ampel-main{display:block;margin:2mm 0}.ampel p{font-size:10pt;margin-top:2mm}.ampel-title{font-size:12pt}.ampel .light{display:none}#ampelStatus{font-size:20pt!important}#ampelExplanation{font-size:10pt!important;margin-top:1mm}
+      .warning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2mm}.warning-card{padding:3mm;border-radius:2mm}.warning-card h3{font-size:10pt}.warning-card p,.warning-state{font-size:9pt}
+      .road-thresholds{gap:2mm;margin-top:3mm}.threshold{padding:2mm;font-size:9pt}.threshold small{font-size:8pt}.station-icon{width:6mm;height:6mm;padding:1mm}.station-gap{padding:1mm 2mm}.station-card{box-shadow:none}.station-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm}.station-card{padding:3mm;border-radius:2mm}.station-card h3{font-size:11pt}.station-card p,.station-state,.station-alarm{font-size:8pt!important}.station-data{gap:2mm;margin:2mm 0}.station-data div{padding:2mm}.station-data .num{font-size:14pt}.station-data small{font-size:8pt}
+      #bvision-module,.middle-grid,.chart-grid,.forecast-36{break-before:page;page-break-before:always}
+      .middle-grid>.panel,.chart-grid>.panel,.bottom-grid>.panel{margin-bottom:4mm}
+      .report-list{gap:3mm}.report-item{grid-template-columns:8mm 1fr;gap:2mm;break-inside:avoid-page}.report-item b{font-size:11pt}.report-item div{font-size:10pt}.report-ico{font-size:15pt}
+      .warning-card,.station-card,.metric,.fcard,.source-box{break-inside:avoid-page;page-break-inside:avoid}
+      #radarBern{break-inside:avoid-page}#radarBern iframe{display:none!important}#radarBern .subline:last-child a{font-size:9pt}#radarBern .subline:last-child a::after{content:" (" attr(href) ")";overflow-wrap:anywhere}
+      .print-only{display:block;font-size:9pt;color:#526b7f}
+      .horizontal-scroll,.hourly-scroll,.canvas-wrap{overflow:visible!important;max-height:none!important;max-width:none;border-radius:0}
+      .chart-with-axes{display:flex;break-inside:avoid-page}.chart-with-axes .chart-axis{flex:0 0 9mm;width:9mm!important;height:75mm!important}.chart-with-axes .canvas-wrap{flex:1;width:0;min-width:0}.canvas-wrap canvas{min-width:0!important;max-width:100%;width:100%!important;height:75mm!important}
+      .legend{font-size:8pt;gap:2mm;margin:2mm 0}.hourly-scroll table{min-width:0!important;width:100%;table-layout:fixed}.hourly-scroll th,.hourly-scroll td{position:static!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8pt;padding:1.5mm 1mm;vertical-align:top}.hourly-scroll th:first-child,.hourly-scroll td:first-child{width:30mm;min-width:0!important}.hourly-risk{font-size:7pt}
+      thead{display:table-header-group}tr{break-inside:avoid-page;page-break-inside:avoid}
+      .forecast-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2mm}.fcard{padding:2mm;min-width:0}.fcard .slot{font-size:8pt}.fcard .ficon{font-size:14pt;margin:1mm 0}.fcard .temp{font-size:15pt}.fmeta{font-size:8pt}
+      .sources{display:block}.source-box{margin-bottom:3mm}summary{font-weight:700;break-after:avoid-page}
+    }
+
+    .developer-joke{display:block;margin-top:3px;font-size:12px;letter-spacing:0;opacity:.9}
+    .layout-toolbar{margin:16px 0;padding:15px 18px;display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;border-left:4px solid #3883a4}
+    .layout-export{flex-basis:100%;margin-top:4px;padding-top:12px;border-top:1px solid var(--line)}
+    .layout-export button{font-size:13px;padding:9px 12px;border-radius:9px}
+    .layout-heading{flex:1;min-width:180px}.layout-heading strong{display:block;color:var(--navy);font-size:17px}.layout-heading span{font-size:12px;color:var(--muted)}
+    .layout-actions{display:flex;gap:8px;flex-wrap:wrap}.layout-actions button{padding:9px 12px;border-radius:9px;font-size:13px}.layout-reset{background:none;color:#47647b;text-decoration:underline}
+    #layoutStatus{flex-basis:100%;font-size:12px;color:var(--muted);margin:0}.layout-toolbar button:disabled{opacity:.5;cursor:default}
+    .dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch;margin:18px 0}
+    .dashboard-grid>.dashboard-tile{margin:0!important;padding:0!important;min-width:0;overflow:hidden;border:1px solid #d6e3ed;border-radius:18px;box-shadow:0 5px 18px #17324a09}
+    .dashboard-tile[data-wide="true"],.dashboard-tile[data-collapsed="true"]{grid-column:1/-1}
+    .dashboard-tile[data-collapsed="true"]{align-self:start}
+    .dashboard-tile>.tile-disclosure{margin:0!important;padding:0!important;border:0!important;background:transparent}
+    .dashboard-tile>.tile-disclosure>.tile-summary{display:flex;list-style:none;align-items:center;gap:12px;padding:18px 20px;margin:0!important;min-height:76px;cursor:pointer;color:var(--navy);font-weight:800;font-size:20px;line-height:1.3;border-bottom:1px solid transparent}
+    .tile-summary::-webkit-details-marker{display:none}.tile-symbol{font-size:24px;line-height:1;flex-shrink:0}.tile-title{flex:1;min-width:0;overflow-wrap:anywhere}
+    .tile-summary .tile-title h2,.tile-summary .tile-title .ampel-title{font-size:20px;line-height:1.3;margin:0;font-weight:800;color:inherit;letter-spacing:0}
+    .tile-summary::after{content:'⌄';font-size:22px;color:#638298;transition:transform .15s}.tile-disclosure[open]>.tile-summary::after{transform:rotate(180deg)}
+    .tile-disclosure[open]>.tile-summary{border-bottom-color:#e1ebf2!important;background:#f6fafc}
+    .tile-disclosure>.tile-summary~*{margin-left:20px;margin-right:20px}.tile-disclosure>div:last-child{padding-bottom:18px}
+    .tile-disclosure>.tile-summary+div{margin-top:16px}
+    .tile-disclosure>.tile-summary~.subline{margin-top:16px}.tile-disclosure>.tile-summary~p:last-child{margin-bottom:20px}
+    .tile-disclosure>.tile-summary~details{margin-top:12px;margin-bottom:16px}
+    .webcam-disclosure .tile-title>span{display:none}
+    .dashboard-tile .radar-frame{height:340px;display:block;width:100%}.dashboard-tile .webcam-frame{height:440px}
+    .dashboard-tile .chart-with-axes{min-width:0}.dashboard-tile .horizontal-scroll{max-width:100%}
+    .dashboard-tile .ampel-main{margin-top:0}.dashboard-tile .station-grid[data-count="1"]{max-width:650px}
+    .tile-editor{display:none;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px dashed #8aaec6;background:#eaf3f9;font-size:12px;color:#385f7a}
+    .is-editing .tile-editor{display:flex}.is-editing .dashboard-tile{outline:2px solid #9ec7de;outline-offset:1px}.tile-grip{cursor:grab;flex:1;font-weight:700}
+    .tile-editor button{padding:5px 11px;border-radius:7px;font-size:16px;background:white;color:#244d69;border:1px solid #adc7d9}.tile-editor button:disabled{opacity:.35;cursor:default}.tile-editor label{display:flex;align-items:center;gap:3px;white-space:nowrap}.tile-editor input{accent-color:#265f86}
+    .dashboard-tile.is-dragging{opacity:.45}.dashboard-tile.drop-target{outline:3px solid #2484aa;outline-offset:2px}
+    .tile-summary:focus-visible,.tile-editor button:focus-visible,.layout-toolbar button:focus-visible{outline:3px solid #3086bb;outline-offset:-3px}
+    @media(max-width:1000px){.dashboard-grid{grid-template-columns:1fr}.dashboard-grid>.dashboard-tile{grid-column:1}.dashboard-tile .radar-frame{height:300px}}
+    @media(max-width:600px){.layout-toolbar{padding:12px}.layout-actions{width:100%}.layout-actions button{flex:1}.dashboard-grid{gap:12px}.dashboard-tile>.tile-disclosure>.tile-summary{padding:14px;min-height:64px;font-size:18px}.tile-summary .tile-title h2,.tile-summary .tile-title .ampel-title{font-size:18px}.tile-disclosure>.tile-summary~*{margin-left:14px;margin-right:14px}.tile-symbol{font-size:22px}.dashboard-tile .webcam-frame{height:340px}}
+    @media print{.layout-toolbar,.tile-editor{display:none!important}.dashboard-grid{display:block;margin:0}.dashboard-grid>.dashboard-tile{margin:0 0 4mm!important;box-shadow:none;border-radius:2mm;break-inside:auto}.dashboard-tile>.tile-disclosure>.tile-summary{padding:3mm;min-height:0;background:white!important}.tile-summary::after{display:none}.tile-disclosure>.tile-summary~*{margin-left:3mm;margin-right:3mm}.tile-symbol{font-size:16pt}}
+
+  </style>
+<link rel="stylesheet" href="./disciplines.css">
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <svg class="hero-road-scene" viewBox="0 0 720 280" fill="none" aria-hidden="true" focusable="false">
+      <path d="M205 280 360 16h66l135 264" fill="#0b233b" stroke="#a7d8f1" stroke-width="3"/>
+      <path d="m238 280 137-264m158 264L414 16" stroke="#c0e4f4" stroke-width="3"/>
+      <path d="m387 42-1 25m-2 24-2 35m-3 28-3 43m-4 31-4 52" stroke="#ffd37c" stroke-width="5" stroke-linecap="round"/>
+      <path d="M0 256c70-26 126-7 205 24M561 280c49-28 105-32 159-16" stroke="#d9f2ff" stroke-width="12" stroke-linecap="round"/>
+      <g stroke="#b9e5ff" stroke-width="2.5" stroke-linecap="round"><path d="M174 58v48m-21-36 42 24m-42 0 42-24M167 62l7 8 7-8m-14 40 7-8 7 8M558 112v40m-17-30 34 20m-34 0 34-20M551 116l7 7 7-7m-14 32 7-7 7 7M272 136v28m-12-21 24 14m-24 0 24-14"/></g>
+      <g fill="#ccecff"><circle cx="86" cy="168" r="3"/><circle cx="266" cy="42" r="3"/><circle cx="490" cy="55" r="2"/><circle cx="637" cy="206" r="3"/><circle cx="623" cy="60" r="2"/></g>
+    </svg>
+    <svg class="hero-discipline-scene hero-drainage-scene" viewBox="0 0 720 280" fill="none" aria-hidden="true" focusable="false">
+      <defs><linearGradient id="drainWater" x1="0" y1="160" x2="720" y2="280" gradientUnits="userSpaceOnUse"><stop stop-color="#73dce8"/><stop offset="1" stop-color="#3397d4"/></linearGradient></defs>
+      <path d="M0 196c90-45 142 31 224-3s140-29 218 4 159-21 278-12v95H0Z" fill="url(#drainWater)" opacity=".7"/>
+      <g stroke="#c9f4ff" stroke-width="3" stroke-linecap="round"><path d="M18 221c57-19 79 15 133 1m68 5c42-18 66 4 105 0m59 7c54-15 84 7 125-5m45-1c40-18 65 3 103-8"/><path d="M33 251c55-17 85 14 138-2m61 7c48-16 73 4 115-1m74-3c40-14 67 5 103-1m46-2c41-13 64 1 109-10"/></g>
+      <path d="M242 63v65a25 25 0 0 0 25 25h177a25 25 0 0 1 25 25v53" stroke="#a4d6eb" stroke-width="38"/>
+      <path d="M242 63v65a25 25 0 0 0 25 25h177a25 25 0 0 1 25 25v53" stroke="#235d81" stroke-width="24"/>
+      <path d="M242 83v45a25 25 0 0 0 25 25h177a25 25 0 0 1 25 25v45" stroke="#7ce0f2" stroke-width="8" stroke-dasharray="19 14" stroke-linecap="round"/>
+      <path d="M214 63h56M219 47h46M219 33h46" stroke="#d7f3ff" stroke-width="8" stroke-linecap="round"/>
+      <path d="M476 42c0-16 13-29 29-29 14 0 26 10 29 22 20-10 42 5 42 23 20-1 33 11 33 26H470c-18-10-17-33 6-42Z" fill="#d8f4ff"/>
+      <g stroke="#a9eaff" stroke-width="5" stroke-linecap="round"><path d="m490 104-9 18m38-18-9 18m38-18-9 18m38-18-9 18M119 81l-8 18m35-18-8 18m35-18-8 18"/></g>
+      <path d="M118 44c3-21 33-24 42-4 21-9 40 5 38 22h-97c-5-11 3-20 17-18Z" fill="#bde7fb"/>
+      <g stroke="#e0f5ff" stroke-width="3"><path d="M581 167v63m-10-47h20m-20 15h20m-20 15h20"/><circle cx="581" cy="156" r="8"/></g>
+      <g fill="#c5f4ff"><circle cx="327" cy="58" r="4"/><circle cx="369" cy="91" r="3"/><circle cx="639" cy="111" r="4"/></g>
+    </svg>
+    <svg class="hero-discipline-scene hero-hazards-scene" viewBox="0 0 720 280" fill="none" aria-hidden="true" focusable="false">
+      <path d="M0 246c97-24 160-13 250 7s181-35 257-17 131 23 213-3v47H0Z" fill="#6495b2" opacity=".65"/>
+      <path d="M285 62c-4-35 46-57 69-28 23-22 64-7 67 24 30-8 59 14 59 42H263c-20-13-17-36 22-38Z" fill="#c5ddec"/>
+      <path d="M467 97c-4-27 34-43 54-21 20-14 46 0 47 20 24-8 49 10 49 31H449c-16-13-10-29 18-30Z" fill="#97c6df"/>
+      <path d="m355 104-31 56h30l-17 49 65-78h-34l22-27Z" fill="#ffe396"/>
+      <g stroke="#c8e9fa" stroke-width="4" stroke-linecap="round"><path d="M79 98h101c29 0 27-35 6-35-14 0-21 9-21 19M55 120h159c34 0 37 40 11 40-16 0-23-12-22-21M112 145h58M499 176h102c30 0 27-35 5-35-15 0-20 10-20 19M523 199h128"/></g>
+      <g stroke="#c8e9fa" stroke-width="3" stroke-linecap="round"><path d="m272 123-10 21m28 1-10 21m151-37-10 21m28 0-10 21m40-32-9 21m37-12-10 21"/></g>
+      <g fill="#e6f6ff"><circle cx="306" cy="185" r="5"/><circle cx="420" cy="191" r="5"/><circle cx="443" cy="213" r="4"/><circle cx="465" cy="187" r="5"/><circle cx="293" cy="218" r="4"/></g>
+      <path d="M177 250c4-33 18-68 46-91m-32 52 35-3m-26-15-4-23m-14 59-28-12" stroke="#b2d7e6" stroke-width="7" stroke-linecap="round"/>
+      <path d="M213 160c25-21 50-9 53 5-8 9-25 14-37 11m-33 11c17-13 38-10 48 5-9 10-26 15-42 8" stroke="#c5e9f5" stroke-width="12" stroke-linecap="round"/>
+      <path d="M623 247h38m-19 0v-35m-13 0h26" stroke="#b8dcea" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+
+    <div class="hero-top">
+      <div class="brand">
+        <div class="brand-badge"><img src="./icon-192-v3.png" alt="" width="56" height="56" style="border-radius:14px" /></div>
+        <div>
+          <h1>Meteo Dashboard</h1>
+          <div class="subtitle" id="locationSubtitle">Winterdienst &amp; Strassenzustand</div>
+          <div class="tagline" id="heroTagline">Wetter · Strassenverhältnisse · Einsatzorientierung</div><div class="tagline author" style="font-size:14px;opacity:.85;margin-top:5px">Entwickler Michel Furrer<span class="developer-joke">Kein IT-Profi. Aber einer, der weiss, wo man klicken möchte.</span></div><div class="account-strip"><span id="accountInfo">Anmeldung wird geprüft.</span><a href="/signout-with-chatgpt?return_to=%2F" target="_top">Abmelden</a><a href="https://help.openai.com/en/articles/4936828-resetting-or-changing-your-chatgpt-password" target="_blank" rel="noopener noreferrer">Passwort vergessen?</a></div>
+        </div>
+      </div>
+      <div class="hero-meta">
+        <div class="small" id="todayLabel">—</div>
+        <div class="bigtime" id="nowTime">--:--:--</div>
+        <div class="small timezone-label">Schweizer Zeit</div>
+        <div class="small" id="lastUpdate">Letzte Aktualisierung: wird geladen</div>
+        <form id="refreshForm" action="./" method="get"><button id="refreshBtn" type="submit" name="refresh" value="1">↻ Seite aktualisieren</button></form>
+        <div class="small" id="weatherRefreshStatus" role="status" aria-live="polite">Wetterdaten werden geladen.</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="panel location-picker" aria-label="Bereich und Wetterstandort auswählen">
+    <div class="scope-field"><label for="disciplineSelect">Bereich</label><select id="disciplineSelect"><option value="winter">Winterdienst</option><option value="drainage">Entwässerung</option><option value="hazards">Naturgefahren</option></select></div>
+    <div class="scope-field" id="weatherLocationField"><label for="locationSelect">Wetterstandort</label>
+    <select id="locationSelect"><option value="bern">Stadt Bern</option><option value="meikirch">Meikirch</option><option value="blatten">Blatten bei Naters</option></select></div>
+    <div class="scope-fixed" id="drainageLocation" hidden>🌊 Stadt Bern <small>Stadtgebiet und regionaler Aare-Kontext</small></div>
+  </section>
+
+
+  <div class="warning-overview">
+  <section class="section" aria-label="Winterdienst-Ampel">
+    <div class="panel ampel" id="ampelBox">
+      <div class="warning-origin">DASHBOARD-BEWERTUNG · MODELLPROGNOSE · NÄCHSTE 12 STUNDEN</div>
+      <div class="ampel-title">WINTERDIENST-AMPEL</div>
+      <div class="ampel-main">
+        <div class="light"></div>
+        <div>
+          <div class="ampel-status" id="ampelStatus" style="font-size:32px">Wird geladen</div>
+          <div id="ampelExplanation" style="font-size:17px;font-weight:700">Modellauswertung wird geladen</div>
+        </div>
+      </div>
+      <p id="ampelText">Wetterlage wird geladen.</p>
+      <details class="ampel-criteria warning-legends"><summary>Schnee, Regen und Bewertungsgrundlage</summary>
+      <div class="snow-legend-title">Schnee-Legende · Neuschnee in den nächsten 12 Stunden</div>
+      <div class="warning-legend snow-legend" aria-label="Schneefarben nach prognostizierter Neuschneemenge"><span class="green">&lt; 1 cm · keine Warnung</span><span class="yellow">1–&lt;3 cm · Gelb</span><span class="orange">3–&lt;5 cm · Orange</span><span class="red">5–10 cm · Rot</span><span class="purple">> 10 cm · Violett</span></div>
+      <div class="snow-legend-title">Regen-Legende · flüssige Menge in 12 Stunden · 1 mm = 1 l/m²</div>
+      <div class="warning-legend snow-legend" aria-label="Regenmengen nach MeteoSchweiz-Schwellen"><span class="green">&lt; 20 l/m² · keine Warnung</span><span class="yellow">ab 20 · Gelb</span><span class="orange">ab 35 · Orange</span><span class="red">ab 60 · Rot</span><span class="purple">ab 100 · Violett</span></div>
+      <p class="station-note">Schneefarbe nach der Neuschneesumme in 12 Stunden. <span class="warn-red">Genau 10,0 cm bleibt Rot</span>, <span class="warn-purple">erst darüber gilt Violett</span>. Regen in 12 Stunden: <span class="warn-yellow">ab 20 l/m² Gelb</span>, <span class="warn-orange">ab 35 Orange</span>, <span class="warn-red">ab 60 Rot</span>, <span class="warn-purple">ab 100 Violett</span> (MeteoSchweiz-Mengenschwellen, eigene Modellauswertung). Zusätzlich gilt <span class="warn-yellow">Gelb bei Kälte bis 2 °C ohne Nässe</span>; <span class="warn-orange">Gefriernässesignale erhalten Orange</span>. Bei mehreren Auslösern gilt die höhere Stufe. Die Begründung nennt den Auslöser. Der Lagebericht umfasst 12 Stunden. Amtliche Warnungen und Boschung-Temperaturalarme behalten ihre eigene Bewertung.</p>
+      </details>
+      <div class="situation-brief" id="situationBrief" aria-live="polite"><div class="situation-heading"><span aria-hidden="true">🌦️</span><h3>Lage auf einen Blick</h3></div><p>Der Lagebericht für den gewählten Ort wird geladen.</p></div>
+
+    </div>
+  </section>
+
+  <section class="section panel panel-pad official-warnings" id="officialWarnings" aria-labelledby="officialWarningsTitle" data-state="loading">
+    <div class="warning-origin">AMTLICHE WARNUNGEN · WARNREGION DES GEWÄHLTEN ORTES</div>
+    <h2 id="officialWarningsTitle">MeteoSchweiz-Warnungen · Bern</h2>
+    <p id="officialWarningsStatus" role="status" aria-live="polite">Amtliche Wetterwarnungen werden abgerufen.</p>
+    <div id="officialWarningsList" class="official-warning-list"></div>
+    <div class="warning-legend" aria-label="Amtliche Gefahrenstufen"><span class="yellow">Stufe 2 · Gelb</span><span class="orange">Stufe 3 · Orange</span><span class="red">Stufe 4 · Rot</span><span class="purple">Stufe 5 · Violett</span></div>
+    <p class="station-note" id="officialWarningsSource">Quelle: MeteoSchweiz · Warnregion des gewählten Ortes</p>
+  </section>
+
+
+  </div>
+
+  <section class="section panel panel-pad" aria-labelledby="bern-current-title">
+    <h2 id="bern-current-title">Aktuelles Wetter Bern</h2>
+    <div class="cards-grid" id="cards"></div>
+    <details class="precip-criteria">
+      <summary>Einheitliche Farben · Schnee, Regen und Glätte</summary>
+      <p><span class="warn-green">Grün: kein Warnsignal nach diesen Kriterien</span> · <span class="warn-yellow">Gelb: beobachten</span> · <span class="warn-orange">Orange: erhöhte Aufmerksamkeit</span> · <span class="warn-red">Rot: Handlungsbedarf prüfen</span> · <span class="warn-purple">Violett: aussergewöhnlich hohe Belastung</span>. Die Farbe nennt immer den Auslöser. Bei mehreren Auslösern gilt die höchste Stufe. <span class="warn-neutral">Grau bedeutet fehlende oder veraltete Daten, keine Entwarnung.</span></p>
+      <p><b>Schnee in 12 Stunden:</b> <span class="warn-green">unter 1 cm keine Warnung</span>; <span class="warn-yellow">ab 1 cm Gelb</span>; <span class="warn-orange">ab 3 cm Orange</span>; <span class="warn-red">ab 5 cm Rot</span>; <span class="warn-purple">über 10 cm Violett</span>. <span class="warn-red">Genau 10 cm bleibt Rot.</span> Eigene Winterdienst-Einstellung.</p>
+      <p><b>Regen in 12 Stunden:</b> <span class="warn-green">unter 20 l/m² keine Mengenwarnung</span>; <span class="warn-yellow">ab 20 Gelb</span>; <span class="warn-orange">ab 35 Orange</span>; <span class="warn-red">ab 60 Rot</span>; <span class="warn-purple">ab 100 Violett</span>. 1 mm Regen = 1 l/m². Nur flüssiger Niederschlag, kein Schnee-Wasseräquivalent. Grundlage: MeteoSchweiz, technische Warnschwellen für Alpennordseite und Alpen, Tabelle 5 (Mai 2021). Die Mengeneinstufung allein ist keine amtliche Warnung und deckt lokale kurze Starkregenspitzen nicht ab.</p>
+      <p><b>Glätte:</b> <span class="warn-orange">Gefrierender Regen, Reifbildung oder Nässe bei höchstens 2 °C Modell-Lufttemperatur erhalten Orange</span>; <span class="warn-yellow">Kälte allein bis 2 °C Gelb</span>. Nässe bedeutet mindestens 0,1 mm flüssigen Niederschlag in der aktuellen oder einer der drei vorhergehenden Modellstunden. Die Modelle messen keinen Fahrbahnzustand.</p>
+      <p>Diese Regeln gelten für Ampel, Niederschlagskarte, Modellhinweise und Detailprognose. Die Messstellen verwenden separat die unten erklärte Temperaturreserve. Amtliche Warnungen behalten die von MeteoSchweiz ausgegebene Stufe. <a href="https://www.meteoschweiz.admin.ch/dam/jcr%3Aa5aa1c52-b634-45dd-9757-12004070c8af/beschreibungenzudengefahrenstufen.pdf" target="_blank" rel="noopener noreferrer">MeteoSchweiz: technische Warnschwellen</a></p>
+    </details>
+  </section>
+
+  <section class="section panel panel-pad" aria-labelledby="warnings-title">
+    <div class="warning-origin">MODELLHINWEISE · NÄCHSTE 6 STUNDEN</div>
+    <h2 id="warnings-title">Warnhinweise Bern · nächste 6 Stunden</h2>
+    <div class="subline">Modellhinweise, keine amtlichen Warnungen. Glatteis ist ohne Fahrbahnprognose nur eingeschränkt beurteilbar.</div>
+    <div class="warning-grid">
+      <article class="warning-card" id="warning-ice" data-level="unknown">
+        <h3>🧊 Glätte · Modellsignal</h3>
+        <div class="warning-state" role="status" aria-live="polite">Wird geprüft</div>
+        <p class="warning-window">Nächste 6 Stunden</p><p class="warning-reason">Wettermodelldaten werden geladen.</p>
+      </article>
+      <article class="warning-card" id="warning-snow" data-level="unknown">
+        <h3>🌨️ Schnee · Modellprognose</h3>
+        <div class="warning-state" role="status" aria-live="polite">Wird geprüft</div>
+        <p class="warning-window">Nächste 6 Stunden</p><p class="warning-reason">Wettermodelldaten werden geladen.</p>
+      </article>
+      <article class="warning-card" id="warning-freezing-rain" data-level="unknown">
+        <h3>🌧️ Gefrierender Niederschlag</h3>
+        <div class="warning-state" role="status" aria-live="polite">Wird geprüft</div>
+        <p class="warning-window">Nächste 6 Stunden</p><p class="warning-reason">Wettermodelldaten werden geladen.</p>
+      </article>
+      <article class="warning-card" id="warning-rain" data-level="unknown">
+        <h3>🌧️ Regen · Mengenwarnung</h3><div class="warning-state" role="status" aria-live="polite">Wird geprüft</div><p class="warning-window"></p><p class="warning-reason"></p>
+      </article>
+    </div>
+    <p class="station-note" id="warningUpdate">Modellstand wird geladen.</p>
+  </section>
+
+
+
+  <section class="section panel panel-pad" id="bvision-module">
+    <div class="warning-origin" id="stationOrigin">MESSWERTWARNUNGEN · STADT BERN</div>
+    <h2 id="stationTitle">Glatteis-Frühwarnsysteme Stadt Bern</h2>
+    <div class="subline">Fahrbahnzustand und Stationsmesswerte · Schweizer Zeit · Abrufintervall 15 Minuten</div>
+    <p id="roadAlarmSummary" class="road-alarm-summary" role="alert" hidden></p>
+    <div class="station-grid" id="stationGrid" data-count="3">
+      <article class="station-card" data-station="riedbach">
+        <div class="station-head"><h3><svg class="station-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4 5 28M21 4l6 24M16 5v5m0 4v5m0 4v5"/></svg><span>Riedbach</span></h3><span class="station-state">Momentaufnahme</span></div>
+        <div class="surface-hero"><div class="surface-art" aria-hidden="true"></div><div class="surface-copy"><small>Fahrbahnzustand</small><strong class="road-condition">Wird geprüft</strong><span class="surface-state"></span><div class="surface-detail"></div></div></div>
+        <div class="station-data">
+          <div><small title="Lufttemperatur"><span aria-hidden="true">🌡</span> Luft</small><span class="num air-temperature">6.6 °C</span></div>
+          <div><small title="Fahrbahntemperatur"><span aria-hidden="true">🌡</span> Fahrbahn</small><span class="num temp">8.1 °C</span></div>
+          <div><small><span aria-hidden="true">❄</span> Gefrierpunkt Strasse</small><span class="num freezing">Kein Messwert</span></div>
+        </div>
+        <p><span class="humidity">89.2 % Feuchte</span></p>
+        <p class="updated">Messung: 21.10.2026, 22:38 Uhr · Schweizer Zeit</p>
+        <div class="station-assessment" role="status" aria-live="polite"><b class="assessment-title">Temperaturbewertung wird geprüft</b><p class="station-gap"></p><span class="assessment-text"></span></div>
+        <p class="station-quality">Aus angemeldeter Bvision-Sitzung ausgelesen</p>
+      </article>
+      <article class="station-card" data-station="schwarzenburgstrasse">
+        <div class="station-head"><h3><svg class="station-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4 5 28M21 4l6 24M16 5v5m0 4v5m0 4v5"/></svg><span>Schwarzenburgstrasse</span></h3><span class="station-state">Momentaufnahme</span></div>
+        <div class="surface-hero"><div class="surface-art" aria-hidden="true"></div><div class="surface-copy"><small>Fahrbahnzustand</small><strong class="road-condition">Wird geprüft</strong><span class="surface-state"></span><div class="surface-detail"></div></div></div>
+        <div class="station-data">
+          <div><small title="Lufttemperatur"><span aria-hidden="true">🌡</span> Luft</small><span class="num air-temperature">7.4 °C</span></div>
+          <div><small title="Fahrbahntemperatur"><span aria-hidden="true">🌡</span> Fahrbahn</small><span class="num temp">8.2 °C</span></div>
+          <div><small><span aria-hidden="true">❄</span> Gefrierpunkt Strasse</small><span class="num freezing">Kein Messwert</span></div>
+        </div>
+        <p><span class="humidity">83.4 % Feuchte</span></p>
+        <p class="updated">Messung: 21.10.2026, 22:38 Uhr · Schweizer Zeit</p>
+        <div class="station-assessment" role="status" aria-live="polite"><b class="assessment-title">Temperaturbewertung wird geprüft</b><p class="station-gap"></p><span class="assessment-text"></span></div>
+        <p class="station-quality">Aus angemeldeter Bvision-Sitzung ausgelesen</p>
+      </article>
+      <article class="station-card" data-station="melchenbuehlweg">
+        <div class="station-head"><h3><svg class="station-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4 5 28M21 4l6 24M16 5v5m0 4v5m0 4v5"/></svg><span>Melchenbühlweg</span></h3><span class="station-state">Momentaufnahme</span></div>
+        <div class="surface-hero"><div class="surface-art" aria-hidden="true"></div><div class="surface-copy"><small>Fahrbahnzustand</small><strong class="road-condition">Wird geprüft</strong><span class="surface-state"></span><div class="surface-detail"></div></div></div>
+        <div class="station-data">
+          <div><small title="Lufttemperatur"><span aria-hidden="true">🌡</span> Luft</small><span class="num air-temperature">7.5 °C</span></div>
+          <div><small title="Fahrbahntemperatur"><span aria-hidden="true">🌡</span> Fahrbahn</small><span class="num temp">8.8 °C</span></div>
+          <div><small><span aria-hidden="true">❄</span> Gefrierpunkt Strasse</small><span class="num freezing">Kein Messwert</span></div>
+        </div>
+        <p><span class="humidity">82.8 % Feuchte</span></p>
+        <p class="updated">Messung: 21.10.2026, 22:37 Uhr · Schweizer Zeit</p>
+        <div class="station-assessment" role="status" aria-live="polite"><b class="assessment-title">Temperaturbewertung wird geprüft</b><p class="station-gap"></p><span class="assessment-text"></span></div>
+        <p class="station-quality">Aus angemeldeter Bvision-Sitzung ausgelesen</p>
+      </article>
+
+      <article class="station-card" data-station="gamsenbruecke" hidden>
+        <div class="station-head"><h3><svg class="station-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4 5 28M21 4l6 24M16 5v5m0 4v5m0 4v5"/></svg><span>Gamsenbrücke Principal</span></h3><span class="station-state">Keine gültigen Daten</span></div>
+        <div class="surface-hero"><div class="surface-art" aria-hidden="true"></div><div class="surface-copy"><small>Fahrbahnzustand</small><strong class="road-condition">Wird geprüft</strong><span class="surface-state"></span><div class="surface-detail"></div></div></div>
+        <div class="station-data">
+          <div><small title="Lufttemperatur"><span aria-hidden="true">🌡</span> Luft</small><span class="num air-temperature">Kein Messwert</span></div>
+          <div><small title="Fahrbahntemperatur"><span aria-hidden="true">🌡</span> Fahrbahn</small><span class="num temp">Kein Messwert</span></div>
+          <div><small><span aria-hidden="true">❄</span> Gefrierpunkt Strasse</small><span class="num freezing">Kein Messwert</span></div>
+        </div>
+        <p><span class="humidity">Feuchte: kein Messwert</span></p>
+        <p class="updated">Noch keine Stationsmessung empfangen</p>
+        <div class="station-assessment" role="status" aria-live="polite"><b class="assessment-title">Temperaturbewertung wird geprüft</b><p class="station-gap"></p><span class="assessment-text"></span></div>
+        <p class="station-quality">Wartet auf die Messwertbrücke</p>
+      </article>
+      <article class="station-card" data-station="meikirch" hidden>
+        <div class="station-head"><h3><svg class="station-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4 5 28M21 4l6 24M16 5v5m0 4v5m0 4v5"/></svg><span>Meikirch</span></h3><span class="station-state">Keine gültigen Daten</span></div>
+        <div class="surface-hero"><div class="surface-art" aria-hidden="true"></div><div class="surface-copy"><small>Fahrbahnzustand</small><strong class="road-condition">Wird geprüft</strong><span class="surface-state"></span><div class="surface-detail"></div></div></div>
+        <div class="station-data">
+          <div><small title="Lufttemperatur"><span aria-hidden="true">🌡</span> Luft</small><span class="num air-temperature">Kein Messwert</span></div>
+          <div><small title="Fahrbahntemperatur"><span aria-hidden="true">🌡</span> Fahrbahn</small><span class="num temp">Kein Messwert</span></div>
+          <div><small><span aria-hidden="true">❄</span> Gefrierpunkt Strasse</small><span class="num freezing">Kein Messwert</span></div>
+        </div>
+        <p><span class="humidity">Feuchte: kein Messwert</span></p>
+        <p class="updated">Noch keine Stationsmessung empfangen</p>
+        <div class="station-assessment" role="status" aria-live="polite"><b class="assessment-title">Temperaturbewertung wird geprüft</b><p class="station-gap"></p><span class="assessment-text"></span></div>
+        <p class="station-quality">Wartet auf die Messwertbrücke</p>
+      </article>
+    </div>
+    <p class="station-note" id="bvisionStatus" role="status" aria-live="polite">Gespeicherte Messwerte vom 21.10.2026. Die Messwertbrücke wird geprüft.</p>
+    <p class="station-note" id="bvisionSchedule"></p>
+
+    <aside class="road-legend" aria-label="Kurzlegende der Messstellenalarme">
+      <div class="road-legend-levels"><span class="yellow">🌡 Gelb: Fahrbahn ≤ 4 °C beobachten</span><span class="orange">⚠ Orange: 1 bis unter 2 °C Reserve</span><span class="red">❄ Rot: unter 1 °C Reserve · handeln</span></div>
+      <p>Reserve = Fahrbahntemperatur minus Gefrierpunkt Strasse. Abstandsalarm nur mit beiden aktuellen Temperaturwerten, höchstens 20 Minuten alt. Ein fehlender Gefrierpunkt allein ist kein Alarm.</p>
+      <details><summary>Messung und Alarmregeln</summary><p>Genau 1 °C Reserve ist Orange, genau 2 °C kein Abstandsalarm. Eine Fahrbahn am oder unter dem gemessenen Gefrierpunkt erhält Rot. Bei mehreren Signalen gilt die höhere Stufe. Gemeldeter Schnee, Schneematsch oder Eis bleibt als eigener Zustandshinweis sichtbar. Grün am Quellenhinweis bedeutet: Messung aktuell.</p><p>Die aktive Boschung-Sonde misst den Gefrierpunkt mit einem Kühlzyklus bei geeigneten Temperatur- und Feuchtebedingungen. Ein fehlender Wert wird nie durch 0 °C ersetzt. Die Alarmgrenzen sind Dashboard-Einstellungen. <a href="https://www.boschung.com/de-de/product/it-arctis/" target="_blank" rel="noopener noreferrer">Boschung: aktive Gefrierpunktmessung</a></p></details>
+    </aside>
+  </section>
+
+  <div class="radar-grid">
+  <section class="section panel panel-pad" id="radarBern">
+    <h2>Wetterradar Schweiz</h2>
+    <div class="subline" id="radarLocation">Niederschlagsradar · Übersicht Schweiz · Markierung Bern</div>
+    <iframe id="radarFrame" class="radar-frame" title="Windy Niederschlagsradar Schweiz" loading="lazy" src="https://embed.windy.com/embed2.html?lat=46.8&amp;lon=8.2&amp;detailLat=46.948&amp;detailLon=7.447&amp;width=800&amp;height=520&amp;zoom=6&amp;level=surface&amp;overlay=radar&amp;product=radar&amp;marker=true&amp;metricRain=mm&amp;metricTemp=%C2%B0C"></iframe>
+    <p class="print-only">Das interaktive Radar ist im PDF nicht enthalten. Aktuellen Radarstand online prüfen.</p>
+    <div class="subline">Zeitstempel im Radar beachten. <a href="https://www.windy.com/-Radar-radar?radar,46.8,8.2,6" target="_blank" rel="noopener noreferrer">Radar bei Windy öffnen</a></div>
+  </section>
+  <section class="section panel panel-pad" id="rainMap" aria-labelledby="rainMapTitle">
+    <h2 id="rainMapTitle">Regenmenge · Modellprognose</h2>
+    <div class="subline" id="rainMapLocation">Niederschlagssumme · Markierung Stadt Bern</div>
+    <iframe id="rainMapFrame" class="radar-frame" title="Windy Regenmenge · Modellprognose" loading="lazy" src="https://embed.windy.com/embed2.html?lat=46.8&amp;lon=8.2&amp;detailLat=46.948&amp;detailLon=7.447&amp;width=800&amp;height=360&amp;zoom=6&amp;level=surface&amp;overlay=rainAccu&amp;product=ecmwf&amp;marker=true&amp;metricRain=mm&amp;metricTemp=%C2%B0C"></iframe>
+    <p class="subline">Zeitraum und Modell in der Karte beachten · 1 mm = 1 l/m². <a id="rainMapLink" href="https://www.windy.com/-Rain-accumulation-rainAccu?rainAccu,next12h,46.948,7.447,6" target="_blank" rel="noopener noreferrer">12-Stunden-Regenmenge bei Windy öffnen</a></p>
+    <p class="print-only">Die interaktive Regenmengenkarte ist im PDF nicht enthalten. Modellkarte online prüfen.</p>
+  </section>
+  </div>
+
+
+
+
+
+  <section class="section panel panel-pad" id="webcamBern" aria-labelledby="webcamBernTitle">
+    <details class="webcam-disclosure"><summary id="webcamBernTitle">📷 Webcam Bern <span>Panorama öffnen</span></summary><div class="webcam-content">
+    <iframe class="radar-frame webcam-frame" title="Panorama-Webcam Bern · Hotel Bellevue Palace · Roundshot" src="https://berntourismus.roundshot.com/hotelbellevuepalace/" loading="lazy" allow="fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <p class="station-note">Webcam: Bern Welcome / Roundshot · <a href="https://berntourismus.roundshot.com/hotelbellevuepalace/" target="_blank" rel="noopener noreferrer">Webcam gross öffnen</a></p>
+    <p class="print-only">Die interaktive Webcam ist im PDF nicht enthalten. https://berntourismus.roundshot.com/hotelbellevuepalace/</p>
+    </div></details>
+  </section>
+
+  <section class="section panel panel-pad" id="webcamBlatten" aria-labelledby="webcamBlattenTitle" hidden>
+    <details class="webcam-disclosure"><summary id="webcamBlattenTitle">📷 Webcam Blatten bei Naters <span>Aletschbord öffnen</span></summary><div class="webcam-content">
+      <iframe class="radar-frame webcam-frame" title="Panorama-Webcam Belalp · Aletschbord" src="https://belalp.roundshot.com/aletschbord/#/" loading="lazy" allow="fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <p class="station-note">Webcam Aletschbord, Belalp · Bildzeit im Fenster beachten · <a href="https://belalp.roundshot.com/aletschbord/#/" target="_blank" rel="noopener noreferrer">Webcam gross öffnen</a></p>
+      <p class="print-only">Die interaktive Webcam ist im PDF nicht enthalten. https://belalp.roundshot.com/aletschbord/</p>
+    </div></details>
+  </section>
+
+  <section class="chart-grid">
+    <div class="panel panel-pad">
+      <h2 id="chart12Title">12 Stunden · Bern · Temperatur, Taupunkt und Niederschlag</h2>
+      <div class="legend">
+        <span><i class="swatch" style="background:#d34d4d"></i>Temperatur (°C)</span>
+        <span><i class="swatch" style="background:#157da8"></i>Taupunkt (°C)</span>
+        <span><i class="swatch bar" style="background:#5ea6e8"></i>Regen (mm = l/m²)</span>
+        <span><i class="swatch bar" style="background:#bfe8fb"></i>Neuschnee (cm)</span>
+        <span><i class="swatch" style="background:#8a9caf;border-top:2px dashed #8a9caf;height:0;width:20px"></i>Nullgradlinie</span>
+      </div>
+      <p class="scroll-hint">↔ Seitlich wischen · die Skalen bleiben sichtbar</p><div class="chart-with-axes"><canvas class="chart-axis" id="chartTempAxis" width="48" height="340" aria-label="Temperaturskala in Grad Celsius"></canvas><div class="canvas-wrap horizontal-scroll" tabindex="0" role="region" aria-label="12-Stunden-Diagramm, horizontal scrollbar"><canvas id="chart12" width="900" height="340"></canvas></div><canvas class="chart-axis" id="chartPrecipAxis" width="48" height="340" aria-label="Mengenskala: Regen in Millimeter, Neuschnee in Zentimeter"></canvas></div>
+    </div>
+    <div class="panel panel-pad">
+      <h2 id="hourly12Title">12 Stunden Detailprognose · Bern</h2>
+      <div class="subline">Schneestunden erhalten die Farbe der Neuschneesumme im angezeigten 12-Stunden-Fenster: ab 1 cm Gelb, ab 3 cm Orange, ab 5 cm Rot, über 10 cm Violett. Unter 1 cm keine Schneewarnung. Zusätzliche Kälte- und Gefriernässesignale werden je Stunde begründet.</div>
+      <p class="scroll-hint">↔ Seitlich wischen · die Uhrzeit bleibt sichtbar</p><div class="horizontal-scroll hourly-scroll" tabindex="0" role="region" aria-label="12-Stunden-Tabelle, horizontal scrollbar">
+        <table>
+          <thead>
+            <tr>
+              <th>Zeit (Uhr)</th><th>Wetter</th><th>Luft (°C)</th><th>Taupunkt (°C)</th><th>Gesamtniederschlag (mm)</th><th>Neuschnee (cm)</th><th>Art</th><th>Wind (km/h)</th>
+            </tr>
+          </thead>
+          <tbody id="hourlyTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+<section class="middle-grid" style="grid-template-columns:1fr">
+    <div class="panel panel-pad">
+      <h2 id="weatherReportTitle">Wetterlage und Wetterbericht Bern</h2>
+      <div class="subline" id="weatherReportSubtitle">Für die nächsten 6 Stunden · Bern · aus Wettermodelldaten</div>
+      <div class="report-list" id="reportList"></div>
+    </div>
+
+</section>
+
+  <section class="section">
+    <div class="panel panel-pad">
+      <h2 id="weatherModelsTitle">Wettermodelle für Bern</h2>
+      <div class="subline" id="weatherModelsLocation">Nächste 6 Stunden · Stadt Bern, 46.948° N / 7.447° E</div>
+      <div id="modelSummary" class="model-summary" role="status" aria-live="polite">Modelle werden geprüft.</div>
+      <details class="model-details"><summary>Erfolgreich abgerufene Modelle</summary><div id="modelComparison"></div></details>
+    </div>
+  </section>
+
+  <section class="section panel panel-pad forecast-36">
+    <h2 id="forecast36Title">Weiterer Ausblick · Bern · acht 6-Stunden-Zeitfenster</h2>
+    <div class="subline">Schweizer Zeit · 00–06, 06–12, 12–18 und 18–00 Uhr · erstes Fenster kann die Detailprognose überlappen · nur vollständig verfügbare Zeitfenster</div>
+    <p class="station-note" id="forecastCoverage" role="status">Verfügbarkeit der acht Ausblickfenster wird geprüft.</p>
+    <div class="forecast-strip" id="forecast36"></div>
+  </section>
+
+
+
+
+  <section class="section panel panel-pad" id="winterOutlook" style="margin-top:18px">
+    <details class="outlook-disclosure"><summary>Winterwetter · Ausblick nächste 10 Wochen</summary>
+    <div class="subline" id="seasonalPeriod">Grossräumige Tendenzen für die Region Bern · keine Einsatzprognose</div>
+    <p id="seasonalStatus" class="model-summary" role="status" aria-live="polite">Langfristdaten werden geprüft.</p>
+    <div id="seasonalSummary" class="report-list"></div>
+    <details class="model-details"><summary>Wochen- und Monatssignale anzeigen</summary><div id="seasonalDetails"></div></details>
+    <div class="report-list"><div class="report-item"><div class="report-ico" aria-hidden="true">🌍</div><div><h3>Europäische Modellkarten · ECMWF</h3><p id="seasonalEuropeStatus" role="status">Europäische Modellkarten werden geprüft.</p><p>EC46 zeigt Wochenabweichungen von Temperatur und Niederschlag. SEAS5 ergänzt den Saisonausblick für Europa. Gültigkeitszeitraum und Modelllauf stehen in den Originalkarten. Die Kartenfarben zeigen Klimaabweichungen beziehungsweise Wahrscheinlichkeiten und sind keine Warnfarben.</p></div></div></div>
+    <details class="model-details"><summary>Europäische Modellkarten · Wochen- und Saisonausblick</summary><div id="seasonalEuropeMaps" class="climate-maps"></div><p class="station-note">Quelle: ECMWF Open Charts · © ECMWF · CC BY 4.0. SEAS5 gilt für den in der Karte bezeichneten Zeitraum und kann über den Zehn-Wochen-Ausblick hinausreichen. Grossräumige Modellberechnung, keine örtliche Schnee- oder Einsatzprognose.</p></details>
+    <div class="report-list"><div class="report-item"><div class="report-ico" aria-hidden="true">🇺🇸</div><div><h3>Amerikanischer Modellvergleich · NOAA CFSv2</h3><p id="seasonalUsStatus" role="status">Modellstand wird geprüft.</p><p>Monatliche Temperatur- und Niederschlagsabweichungen für Europa, ergänzend zu ECMWF EC46 / SEAS5. Die Schweiz liegt im Europaausschnitt. Die Karten gelten grossräumig, nicht als punktgenaue Orts- oder Schneemengenprognose. Die Skalen in den Karten zeigen Klimaabweichungen, keine Alarmfarben.</p></div></div></div>
+    <details class="model-details"><summary>Amerikanische Modellkarten · kommende Monate</summary><div id="seasonalUsMaps" class="climate-maps"></div><p class="station-note">Modelllauf und Gültigkeitszeitraum stehen auf jeder NOAA-Karte. Monatssignale decken die kommenden 10 Wochen teilweise ab; daraus werden keine täglichen Schneefälle oder Winterdiensteinsätze abgeleitet. ECMWF liefert die örtlichen Zahlenwerte; NOAA ergänzt den Vergleich mit Europakarten.</p></details>
+
+    </details>
+  </section>
+
+  <section class="bottom-grid" style="grid-template-columns:1fr">
+    <div class="panel panel-pad">
+      <details class="outlook-disclosure" id="sourcesDisclosure"><summary>Quellen / Datenbasis</summary>
+      <div class="sources">
+        <div class="source-box" id="activeWeatherSources"><b>Verwendete Wetterdaten</b>Erfolgreicher Datenabruf wird geprüft.</div>
+        <div class="source-box"><b>Bvision-Messstellen</b>Bern: Riedbach, Schwarzenburgstrasse und Melchenbühlweg. Blatten bei Naters: Gamsenbrücke Principal (externe Referenzstation). Meikirch: Meikirch. Echte Messwerte aus der berechtigten Bvision-Sitzung; Verbindungsstatus und Messzeit stehen bei den Stationen.</div>
+        <div class="source-box"><b>Warnschwellen und Langfristmodelle</b><a href="https://www.meteoschweiz.admin.ch/dam/jcr%3Aa5aa1c52-b634-45dd-9757-12004070c8af/beschreibungenzudengefahrenstufen.pdf" target="_blank" rel="noopener noreferrer">MeteoSchweiz · technische Regenschwellen (Mai 2021), Tabelle 5</a><br><a href="https://www.boschung.com/de-de/product/it-arctis/" target="_blank" rel="noopener noreferrer">Boschung · aktive Gefrierpunktmessung</a><br><a href="https://open-meteo.com/en/docs/seasonal-forecast-api" target="_blank" rel="noopener noreferrer">ECMWF EC46 / SEAS5 über Open-Meteo</a><br><a href="https://www.cpc.ncep.noaa.gov/products/CFSv2/CFSv2seasonal.shtml" target="_blank" rel="noopener noreferrer">NOAA / NCEP CFSv2 · amerikanische Langfristberechnungen</a><br>Schnee- und Temperaturreservegrenzen sind eigene Dashboard-Einstellungen.</div>
+      </div>
+    </details></div>
+  </section>
+
+  <section class="section panel panel-pad" id="bvision-setup" hidden><details class="outlook-disclosure" id="adminDisclosure"><summary>Administratorenbereich</summary>
+    <details class="user-admin" id="userAdminDisclosure"><summary>Benutzer einladen</summary>
+      <p class="station-note">Nur von dir freigegebene E-Mail-Adressen erhalten Zugriff. Die Benutzer melden sich mit ihrem ChatGPT-Konto an. Nur du kannst weitere Benutzer einladen oder entfernen.</p>
+      <form id="inviteUserForm"><label for="inviteUserEmail">E-Mail-Adresse</label><div class="invite-row"><input id="inviteUserEmail" type="email" maxlength="254" autocomplete="email" required placeholder="name@beispiel.ch"><button id="inviteUserButton" type="submit">Benutzer einladen</button></div></form>
+      <p id="userAdminStatus" role="status" aria-live="polite"></p>
+      <div id="inviteResult" hidden><label for="inviteLink">Einladungslink</label><input id="inviteLink" readonly><div class="invite-actions"><button id="copyInviteLink" type="button">Link kopieren</button><a id="inviteEmailLink" class="admin-mail-link">E-Mail öffnen</a></div><p class="station-note">Der Zugriff ist freigegeben. Kopiere den Link oder öffne eine Einladung in deinem E-Mail-Programm. Es wurde keine E-Mail automatisch versendet.</p></div>
+      <div class="horizontal-scroll"><table><thead><tr><th>Benutzer</th><th>Rolle</th><th>Aktion</th></tr></thead><tbody id="adminUsers"></tbody></table></div>
+    </details>
+    <details class="station-note" id="bvision-einrichtung" style="padding:14px;background:#f7fbfd;border-radius:12px;border:1px solid var(--line)">
+      <summary style="cursor:pointer;font-size:16px;font-weight:700;color:var(--navy)">PC / NAS → Dashboard verbinden · nur für Administratoren</summary>
+      <div class="qnap-station-package"><h3>Separate QNAP-Erweiterung · Meikirch und Gamsenbrücke</h3>
+      <p>Nur die Messstellen «Meikirch» und «Gamsenbrücke Principal» für Blatten bei Naters. Die Bern-Brücke kann unabhängig weiterlaufen.</p>
+      <p><a href="./messwertbruecke-qnap-meikirch-gamsen.zip" download>Erweiterung für bestehenden QNAP-Browser herunterladen</a> · <a href="./qnap-meikirch-gamsen.zip" download>Komplettes QNAP-Einrichtungspaket herunterladen</a></p>
+      <p>ZIP entpacken und ANLEITUNG.md lesen. Boschung-Anmeldung und anschliessende Aktivierung im übertragenden NAS-Browser bleiben erforderlich. Werte älter als 20 Minuten lösen keinen Alarm aus.</p></div>
+      <p>Für den QNAP: <a href="./tsb-qnap-einrichtung.zip" download>Einrichtungspaket mit Anleitung herunterladen</a>. Nach der Einrichtung übernimmt der Browser auf dem NAS die Übertragung.</p>
+
+      <ol style="padding-left:22px;line-height:1.8">
+        <li><a href="./tsb-bvision-messwertbruecke.zip" download><b>Messwertbrücke 1.4 herunterladen (15 Minuten)</b></a> und ZIP entpacken.</li>
+        <li>Im Browser «Erweiterungen verwalten» öffnen. Entwicklermodus aktivieren, «Entpackte Erweiterung laden» wählen und den entpackten Ordner mit manifest.json auswählen.</li>
+        <li>Bei bestehender Installation die Dateien im Erweiterungsordner ersetzen und in der Erweiterungsverwaltung «Neu laden» wählen. Danach Dashboard und Bvision neu laden. In Bvision «Station Mosaik → Spalten» öffnen, Filter «Alle» wählen und beide Tabs offen lassen. Die gewünschten Stationen müssen in der berechtigten Sitzung sichtbar sein: für Blatten «Gamsenbrücke Principal», für Meikirch «Meikirch». Die Brücke übernimmt die echte Stationskennung aus Boschung; andere Stationen werden ignoriert.</li>
+      </ol>
+      <p>Nach der Aktivierung läuft die Online-Übertragung etwa alle 15 Minuten. Browser-Ruhezustand kann Abrufe verzögern. Bei abgelaufener Anmeldung oder fehlenden Messwerten erscheint ein Hinweis.</p>
+      <p><button type="button" id="enableCloudUpload">Übertragung aktivieren</button> <a id="cloudSignIn" href="/signin-with-chatgpt?return_to=%2F%3Fsetup%3D1%23bvision-einrichtung" target="_top" hidden>Mit ChatGPT anmelden</a></p>
+      <p id="cloudSetupStatus" role="status" aria-live="polite">Im übertragenden Browser nach der Installation einmal aktivieren. Nur der Eigentümer kann die Verbindung einrichten.</p>
+
+      <p>Übertragen werden ausschliesslich die fünf freigegebenen Stationsmesswerte. Bvision-Passwörter und Sitzungsschlüssel bleiben im Bvision-Browser. Die Messwerte sind nur für eingeladene und angemeldete Benutzer sichtbar.</p>
+    </details>
+    </details>
+  </section>
+  <section class="layout-toolbar panel" aria-label="Persönliche Dashboard-Ansicht">
+    <div class="layout-heading"><strong>Meine Ansicht</strong><span>Deine Reihenfolge. Deine offenen Kacheln.</span></div>
+    <div class="layout-actions"><button type="button" class="secondary" id="editLayout" aria-pressed="false" disabled>⠿ Kacheln anordnen</button><button type="button" id="saveLayout" disabled>Ansicht speichern</button><button type="button" class="secondary" id="cancelLayout" hidden>Abbrechen</button><button type="button" class="layout-reset" id="resetLayout" disabled>Standardansicht</button></div>
+    <p id="layoutStatus" role="status" aria-live="polite">Deine Ansicht wird mit deinem Benutzerkonto geladen.</p><button id="retryLayout" type="button" class="secondary" hidden>Ansicht erneut laden</button>
+  <div class="actions layout-export" aria-label="Dashboard exportieren und teilen">
+    <button type="button" id="printBtn">PDF erstellen</button>
+    <button type="button" class="secondary" id="shareBtn">Senden / Teilen</button>
+  </div>
+  </section>
+</div>
+
+<script>
+const PLACES={bern:{id:'bern',name:'Stadt Bern',short:'Bern',lat:'46.948',lon:'7.447'},meikirch:{id:'meikirch',name:'Meikirch',short:'Meikirch',lat:'47.008804',lon:'7.363820'},blatten:{id:'blatten',name:'Blatten bei Naters',short:'Blatten bei Naters',lat:'46.359364',lon:'7.983037'}};
+let selectedPlaceId='bern';
+try{const saved=localStorage.getItem('tsb-weather-location');if(Object.prototype.hasOwnProperty.call(PLACES,saved))selectedPlaceId=saved;}catch{}
+const selectedPlace=()=>PLACES[selectedPlaceId];
+let primaryModelName='MeteoSchweiz ICON CH1/CH2';
+let comparisonForecast=[];
+let comparisonFetchedAt=0;
+const $ = s => document.querySelector(s);
+const fmt = (v,d=1)=> Number.isFinite(v) ? v.toFixed(d) : '–';
+const chTime = d => new Intl.DateTimeFormat('de-CH',{timeZone:'Europe/Zurich',weekday:'long',day:'2-digit',month:'long',year:'numeric'}).format(d);
+const timeOnly = d => new Intl.DateTimeFormat('de-CH',{timeZone:'Europe/Zurich',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(d);
+const KNOWN_WEATHER_CODES=[0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99];
+// Forecast times from Open-Meteo are local wall times for Europe/Zurich.
+// Use UTC only for formatting the date part so the visitor timezone cannot shift it.
+function forecastDay(time){
+  return new Intl.DateTimeFormat('de-CH',{weekday:'short',day:'2-digit',month:'2-digit',timeZone:'UTC'}).format(new Date(time.slice(0,10)+'T12:00:00Z'));
+}
+function forecastWindow(first,last){
+  return forecastDay(first)+' '+first.slice(11,16)+' bis '+(first.slice(0,10)!==last.slice(0,10)?forecastDay(last)+' ':'')+last.slice(11,16);
+}
+function forecastSlotHeading(first,last){
+  const names={0:'Nacht',6:'Vormittag',12:'Nachmittag',18:'Abend'};
+  const period=names[Number(first.slice(11,13))]||'Zeitfenster';
+  return forecastDay(first)+'<span class="slot-time">'+period+' · '+first.slice(11,16).replace(':','.')+' bis '+last.slice(11,16).replace(':','.')+' Uhr</span>';
+}
+function extendedForecastGroups(points){
+  points=points.slice(0,72);
+  const groups=[];
+  for(let i=6;i<Math.min(points.length,72);i++){
+    if(typeof points[i].time!=='string'||Number(points[i].time.slice(11,13))%6!==0)continue;
+    const start=Date.parse(points[i].time+'Z'),end=new Date(start+6*3600000).toISOString().slice(0,16);
+    const j=points.findIndex((p,index)=>index>i&&p.time===end);
+    // Group by Swiss wall-clock boundaries, independent of the visitor timezone.
+    const stop=j<0?Math.min(points.length,72):j;
+    const group=points.slice(i,stop);
+    const expected=Array.from({length:6},(_,h)=>new Date(start+h*3600000).toISOString().slice(0,16));
+    if(expected.every(time=>group.some(p=>p.time===time))&&group.every(p=>p.time>=points[i].time&&p.time<end)&&((j>=0&&j<=72)||points[stop-1]?.time===expected[5])){group.windowEnd=end;groups.push(group);}
+  }
+  return groups.slice(0,8);
+}
+function weatherInfo(code,isDay=null){
+  if(code===0) return isDay===true?['☀️','sonnig']:isDay===false?['🌙','klar']:['○','klar'];
+  if([1,2].includes(code)) return [isDay===true?'🌤️':'☁️','leicht bewölkt'];
+  if(code===3) return ['☁️','bedeckt'];
+  if([45,48].includes(code)) return ['🌫️','Nebel'];
+  if([51,53,55].includes(code)) return ['🌧️','Nieselregen'];
+  if([56,57,66,67].includes(code)) return ['🌧️','gefrierender Niederschlag möglich'];
+  if([61,63,65,80,81,82].includes(code)) return ['🌧️','Regen / Schauer'];
+  if([71,73,75,77,85,86].includes(code)) return ['🌨️','Schnee / Schneeschauer'];
+  if([95,96,99].includes(code)) return ['⛈️','Gewitter'];
+  return ['☁️','wechselhaft'];
+}
+function precipitationInfo(points){
+  if(!points.length||points.some(p=>![p.rain,p.snow].every(Number.isFinite)||p.rain<0||p.snow<0))return {type:'nicht verfügbar',icon:'❔',total:null,snow:null};
+  const total=points.reduce((sum,p)=>sum+p.rain,0),snow=points.reduce((sum,p)=>sum+p.snow,0);
+  const snowy=p=>p.snow>0||[71,73,75,77,85,86].includes(p.code);
+  const freezing=points.some(p=>[56,57,66,67].includes(p.code));
+  const hasSnow=points.some(snowy);
+  const hasRain=points.some(p=>p.liquid>0||[51,53,55,61,63,65,80,81,82].includes(p.code)||p.rain>0&&!snowy(p));
+  const thunder=points.some(p=>[95,96,99].includes(p.code));
+  const type=freezing?'gefrierend':hasSnow&&hasRain?'Regen und Schnee':hasSnow?'Schnee':thunder?'Gewitter':hasRain?'Regen':'trocken';
+  const icons={gefrierend:'🧊','Regen und Schnee':'🌨️',Schnee:'🌨️',Gewitter:'⛈️',Regen:'🌧️',trocken:'🌂'};
+  return {type,icon:icons[type],total,snow};
+}
+function precipType(p){return precipitationInfo([p]).type;}
+function snowAmount(value){return fmt(value,Math.abs(value*10-Math.round(value*10))<1e-7?1:Math.abs(value*100-Math.round(value*100))<1e-7?2:6);}
+function snowWarning(value){
+  const scaled=Math.round(value*1e6);
+  if(!Number.isFinite(value)||value<0)return {name:'OFFEN',color:'unknown',range:'Schneemenge fehlt'};
+  if(scaled>10000000)return {name:'VIOLETT',color:'purple',range:'mehr als 10 cm'};
+  if(scaled>=5000000)return {name:'ROT',color:'red',range:'5 bis 10 cm'};
+  if(scaled>=3000000)return {name:'ORANGE',color:'orange',range:'3 bis unter 5 cm'};
+  if(scaled>=1000000)return {name:'GELB',color:'yellow',range:'1 bis unter 3 cm'};
+  return {name:'GRÜN',color:'green',range:'unter 1 cm · keine Schneewarnung'};
+}
+function liquidPrecipitation(point){
+  if(Number.isFinite(point.liquid)&&point.liquid>=0)return point.liquid;
+  return !(point.snow>0)&&![71,73,75,77,85,86].includes(point.code)&&Number.isFinite(point.rain)?point.rain:null;
+}
+// MeteoSwiss technical warning limits, May 2021, northern Alps / Alps, 12 h.
+// This is a model-based dashboard classification, never an official warning.
+function rainWarning(value){
+  if(!Number.isFinite(value)||value<0)return {name:'OFFEN',color:'unknown',range:'Regenmenge fehlt'};
+  const scaled=Math.round(value*1e6);
+  for(const [threshold,name,color] of [[100,'VIOLETT','purple'],[60,'ROT','red'],[35,'ORANGE','orange'],[20,'GELB','yellow']]){
+    if(scaled>=threshold*1e6)return {name,color,range:'ab '+threshold+' l/m² in 12 h'};
+  }
+  return {name:'GRÜN',color:'green',range:'unter 20 l/m² in 12 h · keine Mengenwarnung'};
+}
+function rainEvent(event){
+  const values=event.map(liquidPrecipitation);
+  return event.length===12&&values.every(v=>Number.isFinite(v)&&v>=0)?values.reduce((a,b)=>a+b,0):null;
+}
+function riskForSlots(arr,event=arr){
+  const winter=winterRiskForSlots(arr,event);
+  if(winter[1]==='unknown')return winter;
+  const amount=rainEvent(event),band=rainWarning(amount);
+  const ranks={unknown:-1,green:0,yellow:1,orange:2,red:3,purple:4};
+  if(arr.some(p=>liquidPrecipitation(p)>0)&&ranks[band.color]>0){
+    const period=event.every(p=>typeof p.time==='string')?' ('+forecastWindow(event[0].time,event[11].time)+')':'';
+    const reason=fmt(amount)+' l/m² Regen in 12 Stunden'+period+'. '+band.name+' gemäss Regen-Legende: '+band.range+'. Modellbewertung anhand der MeteoSchweiz-Mengenschwellen, keine amtliche Warnung.';
+    if(ranks[band.color]>ranks[winter[1]])return [band.name,band.color,'Regen · '+band.range,reason+(winter[1]!=='green'?' Zusätzlich: '+winter[3]:'')];
+    winter[3]+=' Zusätzlich: '+reason;
+  }
+  return winter;
+}
+function precipitationCardDetail(summary){
+  if(summary.total===null)return 'Menge nicht verfügbar';
+  if(summary.type==='trocken')return 'kein Niederschlag';
+  if(summary.type==='Schnee')return 'Schnee · '+snowAmount(summary.snow)+' cm Neuschnee<br>mm = Wasseräquivalent';
+  if(summary.snow>0)return summary.type+'<br>'+fmt(summary.total)+' l/m² gesamt (Wasseräquivalent)<br>'+snowAmount(summary.snow)+' cm Neuschnee';
+  return summary.type+' · '+fmt(summary.total)+' l/m²';
+}
+function precipitationAssessment(points){
+  const result=(level,label)=>({level,label});
+  if(points.length!==12||points.some(p=>![p.rain,p.snow,p.temp,p.code].every(Number.isFinite)||p.rain<0||p.snow<0||!KNOWN_WEATHER_CODES.includes(p.code)))return result('unknown','GRAU · Prognose unvollständig');
+  // Fixed-point comparisons keep exact decimal thresholds stable when summed.
+  const amount=Math.round(points.reduce((sum,p)=>sum+p.rain,0)*1e6);
+  const snow=Math.round(points.reduce((sum,p)=>sum+p.snow,0)*1e6);
+  const risk=riskForSlots(points);
+  if(points.some(p=>p.snow>0||[71,73,75,77,85,86,56,57,66,67].includes(p.code))||risk[2]==='Nässe und Kälte')return result(risk[1],risk[0]+' · '+risk[2]);
+  if(risk[1]!=='green')return result(risk[1],risk[0]+' · '+risk[2]);
+  return result('green',amount>0||snow>0?'GRÜN · Keine Mengen- oder Glättewarnung':'GRÜN · Kein Niederschlagssignal');
+}
+
+let officialWarningsRun=0;
+let officialWarningsFetchedAt=0;
+let officialWarningsPayload=null;
+function warningEscape(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function officialWarningTime(stamp){return new Date(stamp).toLocaleString('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' Uhr';}
+function officialWarningsUnavailable(){
+  officialWarningsPayload=null;
+  $('#officialWarnings').dataset.state='unavailable';
+  $('#officialWarningsStatus').textContent='Warnungen nicht verfügbar. Eine Entwarnung ist derzeit nicht möglich.';
+  $('#officialWarningsList').innerHTML='';
+  $('#officialWarningsSource').textContent='Quelle: MeteoSchweiz · Aktuellen Stand auf der offiziellen Warnkarte prüfen.';
+}
+async function loadOfficialWarnings(){
+  const sequence=++officialWarningsRun,place=selectedPlace();
+  officialWarningsFetchedAt=0;
+  officialWarningsPayload=null;
+  $('#officialWarningsTitle').textContent='MeteoSchweiz-Warnungen · '+place.short;
+  $('#officialWarnings').dataset.state='loading';
+  $('#officialWarningsStatus').textContent='Amtliche Wetterwarnungen für '+place.name+' werden abgerufen.';
+  $('#officialWarningsList').innerHTML='';
+  $('#officialWarningsSource').textContent='Quelle: MeteoSchweiz · Warnregion des gewählten Ortes';
+  try{
+    const result=await requestJSON('/api/warnings?location='+place.id,{cache:'no-store'},15000);
+    if(sequence!==officialWarningsRun||selectedPlace().id!==place.id)return;
+    const data=result.data;
+    if(!result.response.ok||data?.location!==place.id||!Array.isArray(data.warnings)||!Number.isFinite(data.fetched_at)||Date.now()-data.fetched_at>10*60000||data.fetched_at>Date.now()+60000)throw Error('Warnungsabruf unvollständig');
+    officialWarningsPayload=data;
+    renderOfficialWarnings();
+  }catch{if(sequence===officialWarningsRun&&selectedPlace().id===place.id)officialWarningsUnavailable();}
+}
+function renderOfficialWarnings(){
+    const data=officialWarningsPayload,place=selectedPlace();
+    if(!data||data.location!==place.id)return;
+    if(Date.now()-data.fetched_at>10*60000){officialWarningsUnavailable();return;}
+    const warnings=data.warnings.filter(w=>w.valid_to===null||w.valid_to>Date.now());
+    const colors={2:'Gelb',3:'Orange',4:'Rot',5:'Violett'};
+    $('#officialWarningsList').innerHTML=warnings.map(w=>`<article class="official-warning" data-level="${Number(w.level)}">
+      <h3>${warningEscape(w.icon)} ${warningEscape(w.title)} · Stufe ${Number(w.level)} / 5 · ${colors[w.level]||'Unbekannt'}${w.outlook?' · Vorwarnung':''}</h3>
+      <p class="validity">${w.valid_from>Date.now()?'Angekündigt · Beginn':'Gültig ab'} ${officialWarningTime(w.valid_from)}${w.valid_to?' bis '+officialWarningTime(w.valid_to):' · bis auf Widerruf'}</p>
+      <p class="warning-text">${warningEscape(w.text)}</p>
+    </article>`).join('');
+    $('#officialWarnings').dataset.state=warnings.length?'warning':'clear';
+    $('#officialWarningsStatus').textContent=warnings.length?warnings.length+' amtliche Wetterwarnung'+(warnings.length===1?'':'en')+' für '+place.name+'.':'Keine aktuellen MeteoSchweiz-Wetterwarnungen für '+place.name+'.';
+    officialWarningsFetchedAt=data.fetched_at;
+    $('#officialWarningsSource').textContent='Quelle: MeteoSchweiz · Warnregion für '+place.name+' (PLZ '+data.postcode+') · Geprüft: '+officialWarningTime(data.fetched_at);
+}
+let warningForecast=null;
+let warningFetchedAt=0;
+let warningFetchFailed=false;
+function warningSignals(slots,prior=[],event=slots){
+  const unknown=()=>['ice','snow','freezing-rain','rain'].map(key=>({key,level:'unknown',state:'Nicht beurteilbar',reason:'Die Vorhersagedaten für sechs Stunden fehlen oder sind unvollständig.',hits:[]}));
+  const knownCodes=[0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99];
+  if(slots.length!==6 || slots.some(p=>!Number.isFinite(p.temp)||!Number.isFinite(p.rain)||p.rain<0||!Number.isFinite(p.snow)||p.snow<0||!knownCodes.includes(p.code)||typeof p.time!=='string'))return unknown();
+  const rainCodes=[56,57,66,67];
+  const snowCodes=[71,73,75,77,85,86];
+  const freezing=slots.filter(p=>rainCodes.includes(p.code));
+  const snow=slots.filter(p=>snowCodes.includes(p.code)||p.snow>0);
+  // This is a local precaution signal, not an official road-icing forecast.
+  // Look back three model hours for possible residual wetness.
+  const icy=slots.filter((p,i)=>{
+    const history=prior.concat(slots.slice(0,i+1)).slice(-4);
+    return p.temp<=2 && history.some(h=>liquidPrecipitation(h)>=0.1);
+  });
+  const rime=slots.filter(p=>p.code===48 && p.temp<=2);
+  const iceHits=freezing.length?freezing:icy.length?icy:rime;
+  const totalSnow=slots.reduce((sum,p)=>sum+p.snow,0);
+  const fullEvent=event.length===12&&event.every(p=>[p.temp,p.rain,p.snow,p.code].every(Number.isFinite)&&p.snow>=0&&p.rain>=0&&knownCodes.includes(p.code));
+  const eventSnow=fullEvent?event.reduce((sum,p)=>sum+p.snow,0):totalSnow;
+  const snowBand=snowWarning(eventSnow);
+  const rainTotal=rainEvent(event),rainBand=rainWarning(rainTotal),rainHits=slots.filter(p=>liquidPrecipitation(p)>0);
+  return [
+    {key:'ice',level:iceHits.length?'watch':'quiet',state:iceHits.length?'ORANGE · Glätte möglich':'GRAU · Kein Modellsignal',hits:iceHits,reason:freezing.length?'Gefrierender Niederschlag im Modell: Vereisung möglich. Örtliche Kontrolle erforderlich.':icy.length?'Niederschlag oder mögliche Restnässe bei '+fmt(Math.min(...icy.map(p=>p.temp)))+' °C Modell-Lufttemperatur. Keine gemessene Fahrbahnvereisung.':rime.length?'Nebel mit Reifbildung bei tiefer Temperatur. Örtliche Reifglätte möglich.':'Kein Glättesignal nach den verwendeten Kriterien. Örtliche Restnässe und kalte Fahrbahnen sind damit nicht ausgeschlossen.'},
+    {key:'snow',level:!fullEvent?'unknown':snow.length&&snowBand.color!=='green'?snowBand.color:'quiet',state:!fullEvent?'GRAU · 12-Stunden-Summe fehlt':snow.length?snowBand.name+' · '+(snowBand.color==='green'?'Keine Schneewarnung':'Schneeprognose'):'GRÜN · Keine Schneewarnung',hits:snow,reason:`Neuschnee nächste 6 Stunden: ${snowAmount(totalSnow)} cm.`+(fullEvent?` Summe nächste 12 Stunden: ${snowAmount(eventSnow)} cm. Schnee-Legende: ${snowBand.range}.`:' Die Farbe kann ohne vollständige 12-Stunden-Prognose nicht bestimmt werden.')+(snow.length?'':' Im Sechs-Stunden-Fenster ist kein Schneefall vorgesehen.')},
+    {key:'freezing-rain',level:freezing.length?'watch':'quiet',state:freezing.length?'ORANGE · Vereisung möglich':'GRAU · Kein Modellsignal',hits:freezing,reason:freezing.length?'Wettercode für gefrierenden Regen oder Nieselregen. Die Orange-Markierung ist ein eigener Modellhinweis und keine amtliche Gefahrenstufe. Vereisung von Oberflächen möglich.':'Im Sechs-Stunden-Fenster zeigt das Modell keinen gefrierenden Regen oder Nieselregen.'},
+    {key:'rain',level:rainTotal===null?'unknown':rainHits.length&&rainBand.color!=='green'?rainBand.color:'quiet',state:rainBand.name+' · Regenmengenprognose',hits:rainHits,reason:rainTotal===null?'Keine vollständige flüssige Niederschlagsmenge für 12 Stunden verfügbar.':fmt(rainTotal)+' l/m² Regen in den nächsten 12 Stunden. '+rainBand.range+'. Grundlage: MeteoSchweiz-Mengenschwellen Alpennordseite / Alpen (Mai 2021); eigene Modellbewertung, keine amtliche Warnung.'}
+  ];
+}
+function renderWarnings(){
+  const slots=warningForecast?nextSlots(warningForecast,6):[];
+  const first=slots.length?warningForecast.hourly.time.indexOf(slots[0].time):-1;
+  const prior=first>0?warningForecast.hourly.time.slice(Math.max(0,first-3),first).map((time,j)=>{const i=Math.max(0,first-3)+j;return {rain:warningForecast.hourly.precipitation[i],snow:warningForecast.hourly.snowfall[i],code:warningForecast.hourly.weather_code[i],liquid:Number.isFinite(warningForecast.hourly.rain?.[i])&&Number.isFinite(warningForecast.hourly.showers?.[i])?warningForecast.hourly.rain[i]+warningForecast.hourly.showers[i]:null};}):[];
+  const old=warningFetchedAt && Date.now()-warningFetchedAt>3*60*60*1000;
+  const signals=warningSignals(slots,prior,warningForecast?nextSlots(warningForecast,12):[]);
+  if(Date.now()-comparisonFetchedAt<=3*60*60*1000)for(const comparison of comparisonForecast){
+    const other=warningSignals(nextSlots(comparison.data,6),[],nextSlots(comparison.data,12));
+    signals.forEach((signal,index)=>{
+      const alt=other[index];
+      const active=level=>['watch','alert','yellow','orange','red','purple'].includes(level);
+      if(signal.level==='quiet' && active(alt.level)){
+        signal.level=alt.level;signal.state=alt.state+' · nur Vergleichsmodell';signal.hits=alt.hits;signal.reason=comparison.name+': '+alt.reason+' '+primaryModelName+' zeigt dafür im selben Zeitfenster kein Warnsignal. Modellabweichung: örtliche Entwicklung prüfen.';
+      }else if(active(signal.level) && alt.level==='quiet')signal.reason+=' '+comparison.name+' zeigt hierfür kein entsprechendes Warnsignal.';
+      else if(active(signal.level) && active(alt.level))signal.reason+=index===1?' '+comparison.name+': '+alt.reason:' Ein entsprechendes Signal ist auch in '+comparison.name+' vorhanden.';
+    });
+  }
+  for(const signal of signals){
+    const root=$('#warning-'+signal.key);
+    const invalid=warningFetchFailed || old;
+    root.hidden=false;
+    root.dataset.level=invalid?'unknown':signal.level;
+    root.dataset.warningColor=invalid||signal.level==='unknown'?'neutral':signal.level==='quiet'?'neutral':signal.level==='watch'?'orange':signal.level==='alert'?'red':signal.level;
+    root.dataset.snowColor='';
+    root.querySelector('.warning-state').textContent=invalid?'Daten nicht aktuell':signal.level==='quiet'?'Keine Warnung':signal.state.replace(/^(?:GRAU|OFFEN)\s*·\s*/, '');
+    root.querySelector('.warning-window').textContent=signal.hits.length ? 'Signal: '+forecastWindow(signal.hits[0].time,signal.hits[signal.hits.length-1].time) : slots.length?'Zeitraum: '+forecastWindow(slots[0].time,slots[slots.length-1].time):'Nächste 6 Stunden';
+    root.querySelector('.warning-reason').textContent=invalid?'Warnhinweise können aktuell nicht verlässlich geprüft werden. Bitte aktualisieren.':signal.reason;
+  }
+  $('#warningUpdate').textContent=(signals.every(s=>s.level==='quiet')&&!warningFetchFailed&&!old?'Keine Modellwarnung nach den verwendeten Kriterien. ':'')+(warningFetchedAt?'Modell abgerufen: '+bvisionDate(warningFetchedAt)+'.': 'Modellstand noch nicht verfügbar.');
+}
+function winterRiskForSlots(arr,event=arr){
+  if(!arr.length||!event.length||event.some(p=>![p.temp,p.rain,p.snow,p.code].every(Number.isFinite)||p.rain<0||p.snow<0||!KNOWN_WEATHER_CODES.includes(p.code)))return ['OFFEN','unknown','Prognose unvollständig','Die Einstufung ist mit den verfügbaren Modellwerten nicht beurteilbar.'];
+  const snowTotal=event.reduce((sum,p)=>sum+p.snow,0);
+  const snowHours=arr.filter(p=>p.snow>0||[71,73,75,77,85,86].includes(p.code));
+  const freezing=arr.filter(p=>[56,57,66,67].includes(p.code));
+  const rime=arr.filter(p=>p.code===48&&p.temp<=2);
+  const cold=arr.filter(p=>p.temp<=2);
+  const wetCold=arr.filter(p=>{
+    const index=event.indexOf(p);
+    return p.temp<=2&&event.slice(Math.max(0,index-3),index+1).some(h=>liquidPrecipitation(h)>=0.1);
+  });
+  const amounts=arr.reduce((sum,p)=>sum+p.snow,0);
+  const span=event.length===12?'12 Stunden':event.length+' Stunde'+(event.length===1?'':'n');
+  const dated=event.every(p=>typeof p.time==='string');
+  const period=dated?' ('+forecastWindow(event[0].time,event[event.length-1].time)+')':'';
+  const reasons=[];
+  if(snowHours.length)reasons.push(arr.length===1?snowAmount(amounts)+' cm Neuschnee in dieser Stunde'+(amounts===0?' bei Schnee-Wettercode':''):snowAmount(snowTotal)+' cm Neuschnee in '+span+period);
+  if(freezing.length)reasons.push('Wettercode für gefrierenden Regen oder Nieselregen: Vereisung möglich');
+  if(rime.length)reasons.push('Nebel mit Reifbildung bei tiefer Temperatur; Reifglätte möglich');
+  if(wetCold.length)reasons.push('Niederschlag oder mögliche Restnässe bei '+fmt(Math.min(...wetCold.map(p=>p.temp)))+' °C Modell-Lufttemperatur');
+  else if(cold.length)reasons.push('Modell-Lufttemperatur bis '+fmt(Math.min(...cold.map(p=>p.temp)))+' °C; kalte Fahrbahnen und örtliche Restnässe beachten');
+  const band=snowWarning(snowTotal);
+  const icing=freezing.length||wetCold.length||rime.length;
+  if(snowHours.length&&['red','purple'].includes(band.color))return [band.name,band.color,'Schnee · '+band.range,reasons.join('. ')+'. Gesamtprognose: '+snowAmount(snowTotal)+' cm Neuschnee in '+span+period+'. Farbe gemäss Schnee-Legende: '+band.range+'.'];
+  if(icing)return ['ORANGE','orange',freezing.length?'Gefrierender Niederschlag':rime.length?'Reifglätte möglich':'Nässe und Kälte',reasons.join('. ')+'. Orange wegen eines Glättesignals, unabhängig von der Schneemenge. Örtliche Kontrolle erforderlich.'];
+  if(snowHours.length&&band.color!=='green')return [band.name,band.color,'Schnee · '+band.range,reasons.join('. ')+'. Farbe gemäss Schnee-Legende: '+band.range+'.'];
+  if(cold.length)return ['GELB','yellow','Kältehinweis bis 2 °C',reasons.join('. ')+'. Gelb wegen Kälte; die Schneewarnung richtet sich separat nach der Neuschneemenge.'];
+  if(snowHours.length)return ['GRÜN','green','Keine Schneewarnung · unter 1 cm',reasons.join('. ')+'. Die Neuschneesumme liegt unter 1 cm; nach der Schnee-Legende keine Schneewarnung.'];
+  return ['GRÜN','green','Kein winterliches Modellsignal','Kein Schnee- oder Gefriernässesignal, Modell-Lufttemperatur durchgehend über 2 °C. Örtliche Fahrbahnverhältnisse separat prüfen.'];
+}
+function hourlyRiskReason(point,event,risk){
+  const reasons=[];
+  if(point.snow>0||[71,73,75,77,85,86].includes(point.code)){const total=event.reduce((sum,p)=>sum+p.snow,0);reasons.push(snowAmount(point.snow)+' cm in dieser Stunde; insgesamt '+snowAmount(total)+' cm in 12 h ('+snowWarning(total).range+')');}
+  if([56,57,66,67].includes(point.code))reasons.push('Modellcode: gefrierender Regen/Nieselregen, Vereisung möglich');
+  if(point.temp<=2)reasons.push(fmt(point.temp)+' °C Luft'+(risk[2]==='Nässe und Kälte'?' mit Niederschlag oder möglicher Restnässe':'; kalte Fahrbahnen beachten'));
+  if(liquidPrecipitation(point)>0&&rainWarning(rainEvent(event)).color!=='green'&&rainEvent(event)!==null)reasons.push(fmt(liquidPrecipitation(point))+' l/m² Regen in dieser Stunde; '+fmt(rainEvent(event))+' l/m² in 12 h ('+rainWarning(rainEvent(event)).range+')');
+  return reasons.join('. ')+'.';
+}
+function nextSlots(data, hours=72){
+  const nowStr = new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).format(new Date()).replace(' ','T');
+  const t = data.hourly.time;
+  let start = t.findIndex(x => x.slice(0,13) >= nowStr.slice(0,13));
+  if(start < 0) start = 0;
+  return Array.from({length: Math.min(hours, t.length - start)}, (_,k)=>{
+    const i = start + k;
+    return {
+      time: t[i],
+      temp: data.hourly.temperature_2m[i],
+      dew: data.hourly.dew_point_2m[i],
+      rain: data.hourly.precipitation[i],
+      liquid: Number.isFinite(data.hourly.rain?.[i])&&Number.isFinite(data.hourly.showers?.[i])&&data.hourly.rain[i]>=0&&data.hourly.showers[i]>=0 ? data.hourly.rain[i]+data.hourly.showers[i] : null,
+      snow: data.hourly.snowfall[i],
+      code: data.hourly.weather_code[i],
+      isDay: data.hourly.is_day?.[i]===1?true:data.hourly.is_day?.[i]===0?false:null,
+      snowline: data.hourly.snowfall_height?.[i]??null,
+      wind: data.hourly.wind_speed_10m[i]
+    };
+  });
+}
+function meteoswissSnowline(entries,time){
+  const source=entries.find(entry=>entry.key==='meteoswiss')?.data;
+  const i=source?.hourly?.time?.indexOf(time)??-1;
+  const value=i>=0?source.hourly.snowfall_height?.[i]:null;
+  if(source?.hourly_units?.snowfall_height&&source.hourly_units.snowfall_height!=='m')return null;
+  // Quarantine below-terrain levels in mild conditions. The upstream ICON
+  // ingestion adjusts these levels; do not try to reverse that transform.
+  const temperature=i>=0?source.hourly.temperature_2m?.[i]:null;
+  if(Number.isFinite(source?.elevation)&&Number.isFinite(temperature)&&temperature>2&&Number.isFinite(value)&&value<source.elevation)return null;
+  return Number.isFinite(value)&&value>=0?value:null;
+}
+function snowlinePresentation(entries,points,place=selectedPlace()){
+  const source=entries.find(entry=>entry.key==='meteoswiss')?.data;
+  const sourceLabel='MeteoSchweiz ICON · via Open-Meteo<br>'+place.name;
+  if(!source)return {value:'Nicht verfügbar',detail:sourceLabel+' · Datenquelle derzeit nicht verfügbar'};
+  const slots=points.map(p=>{
+    const index=source.hourly?.time?.indexOf(p.time)??-1;
+    return index<0?null:{time:p.time,precip:source.hourly.precipitation?.[index],snow:source.hourly.snowfall?.[index],code:source.hourly.weather_code?.[index]};
+  });
+  if(slots.length!==12||slots.some(p=>!p||![p.precip,p.snow,p.code].every(Number.isFinite)||p.precip<0||p.snow<0||!KNOWN_WEATHER_CODES.includes(p.code)))return {value:'Nicht verfügbar',detail:sourceLabel+' · 12-Stunden-Prognose unvollständig'};
+  const wet=slots.filter(p=>p.precip>0||p.snow>0||[51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99].includes(p.code));
+  if(!wet.length)return {value:'Kein Niederschlag',detail:place.name+' · nächste 12 Stunden trocken prognostiziert; daher keine Höhe eingeblendet'};
+  const levels=wet.map(p=>({time:p.time,value:meteoswissSnowline(entries,p.time)})).filter(p=>p.value!==null);
+  if(!levels.length)return {value:'Nicht verfügbar',detail:sourceLabel+' · Niederschlag erwartet, aber kein verlässlich prüfbarer Höhenwert'};
+  const min=Math.min(...levels.map(p=>p.value)),max=Math.max(...levels.map(p=>p.value));
+  return {value:(min===max?Math.round(min):Math.round(min)+' bis '+Math.round(max))+' m ü. M.',detail:sourceLabel+'<br>Während der Niederschlagsstunden: '+forecastWindow(wet[0].time,wet[wet.length-1].time)+' Uhr'+(levels.length<wet.length?'<br>Höhe nur für '+levels.length+' von '+wet.length+' Niederschlagsstunden verfügbar':'')};
+}
+function card(title, value, sub, icon, assessment=null){
+  return `<div class="metric"${assessment?` data-assessment="${assessment.level}"`:''}><div><div class="label">${title}</div><div class="value">${value}</div></div><div>${icon?`<div class="icon">${icon}</div>`:''}<div class="sub">${sub}</div>${assessment?`<div class="assessment">${assessment.label}</div>`:''}</div></div>`;
+}
+function summaryItem(icon, title, text){
+  return `<div class="summary-item"><div class="summary-icon">${icon}</div><div><b>${title}</b><div>${text}</div></div></div>`;
+}
+function reportItem(icon, title, text, warningColor=null){
+  return `<div class="report-item${icon?'':' no-icon'}"${warningColor?` data-warning-color="${warningColor}"`:""}>${icon?`<div class="report-ico">${icon}</div>`:''}<div><b>${title}</b><div>${text}</div></div></div>`;
+}
+function drawChart12(points){
+  const c = $('#chart12'); const g = c.getContext('2d');
+  const W = c.width, H = c.height;
+  g.clearRect(0,0,W,H); g.fillStyle='#fff'; g.fillRect(0,0,W,H);
+  const pad = {l:0,r:0,t:32,b:44}; const w = W-pad.l-pad.r, h = H-pad.t-pad.b;
+  const temps = [0,...points.flatMap(p=>[p.temp,p.dew]).filter(Number.isFinite)];
+  const minT = Math.floor(Math.min(...temps)-1), maxT = Math.ceil(Math.max(...temps)+1);
+  const liquid=points.map(liquidPrecipitation);
+  const maxP = Math.max(1,...liquid.filter(Number.isFinite),...points.map(p=>Number.isFinite(p.snow)?p.snow:0));
+  const x = i => pad.l + ((i+0.5) * w / points.length);
+  const y = v => pad.t + h - ((v-minT)/(maxT-minT))*h;
+  const yP = v => pad.t + h - (v/maxP) * h * 0.38;
+  // Fixed scale canvases share the plot height, outside its scroll container.
+  const tempAxis=$('#chartTempAxis').getContext('2d');
+  const precipAxis=$('#chartPrecipAxis').getContext('2d');
+  for(const axis of [tempAxis,precipAxis]){axis.clearRect(0,0,48,H);axis.fillStyle='#fff';axis.fillRect(0,0,48,H);axis.fillStyle='#6c8397';axis.font='13px system-ui';}
+  tempAxis.textAlign='right';tempAxis.font='bold 12px system-ui';tempAxis.fillText('°C',40,14);tempAxis.font='13px system-ui';
+  precipAxis.textAlign='left';precipAxis.font='bold 11px system-ui';precipAxis.fillText('mm / cm',2,14);precipAxis.font='13px system-ui';
+  // grid
+  g.strokeStyle='#d7e3ec'; g.lineWidth=1;
+  g.fillStyle='#6c8397'; g.font='13px system-ui';
+  for(let i=0;i<=5;i++){
+    const val = minT + (maxT-minT)*i/5; const yy = y(val);
+    g.beginPath(); g.moveTo(pad.l,yy); g.lineTo(W-pad.r,yy); g.stroke();
+    tempAxis.textAlign='right';
+    tempAxis.fillText(val.toFixed(1),40,yy+4);
+  }
+  // right scale for precip
+  for(let i=0;i<=4;i++){
+    const val = maxP * i/4; const yy = yP(val);
+    precipAxis.fillText(val.toFixed(1),8,yy+4);
+  }
+  // zero line
+  g.strokeStyle='#8a9caf'; g.setLineDash([6,5]); g.beginPath(); g.moveTo(pad.l,y(0)); g.lineTo(W-pad.r,y(0)); g.stroke(); g.setLineDash([]);
+  // bars
+  const barW = w/points.length*0.34;
+  points.forEach((p,i)=>{
+    const xx = x(i);
+    const base = pad.t+h;
+    if(liquid[i]>0){ g.fillStyle='#5ea6e8'; const yy = yP(liquid[i]); g.fillRect(xx-barW-1,yy,barW,base-yy); }
+    if(p.snow>0){ g.fillStyle='#bfe8fb'; const yy = yP(p.snow); g.fillRect(xx+1,yy,barW,base-yy); }
+  });
+  // lines
+  function line(vals,color){
+    g.strokeStyle=color; g.lineWidth=3; g.beginPath();
+    let connected=false;
+    vals.forEach((v,i)=>{if(!Number.isFinite(v)){connected=false;return;}const xx=x(i),yy=y(v);if(connected)g.lineTo(xx,yy);else g.moveTo(xx,yy);connected=true;});g.stroke();
+    g.fillStyle=color;vals.forEach((v,i)=>{if(!Number.isFinite(v))return;const xx=x(i),yy=y(v);g.beginPath();g.arc(xx,yy,3,0,Math.PI*2);g.fill();});
+  }
+  line(points.map(p=>p.temp),'#d34d4d');
+  line(points.map(p=>p.dew),'#157da8');
+  // x-axis
+  g.fillStyle='#6c8397'; g.font='13px system-ui';
+  points.forEach((p,i)=>{ if(i%2===0){ g.fillText(p.time.slice(11,16), x(i)-14, H-12); } });
+  // Units are in the legend. Keep the scale gutters clear of vertical titles.
+}
+// Describe only the supplied twelve hourly model values, never a synoptic cause
+// or an exact onset time that the hourly forecast cannot establish.
+function buildSituationBrief(slots,current={},place=selectedPlace()){
+  if(slots.length!==12||slots.some(p=>![p.temp,p.rain,p.snow,p.code].every(Number.isFinite)||p.rain<0||p.snow<0||!KNOWN_WEATHER_CODES.includes(p.code)||typeof p.time!=='string'))return '<p>Lagebericht nicht verfügbar: Die aktuelle Zwölf-Stunden-Prognose ist unvollständig.</p>';
+  const summary=precipitationInfo(slots);
+  const min=Math.min(...slots.map(p=>p.temp)),max=Math.max(...slots.map(p=>p.temp));
+  const start=slots[0],end=slots[11];
+  const [icon,weather]=weatherInfo(KNOWN_WEATHER_CODES.includes(current.weather_code)?current.weather_code:start.code,current.is_day===1?true:current.is_day===0?false:start.isDay);
+  const currentText=Number.isFinite(current.temperature_2m)?'Aktuell im Modell '+weather+' bei '+fmt(current.temperature_2m)+' °C.':'Zu Beginn des Prognosefensters '+weather+' bei '+fmt(start.temp)+' °C.';
+  const phase=summary.type==='trocken'?'In den nächsten zwölf Stunden wird kein Niederschlag erwartet.':summary.type==='gefrierend'?'Im Zwölf-Stunden-Ausblick gibt es ein Signal für gefrierenden Regen oder Nieselregen.':summary.type==='Schnee'?'Im Zwölf-Stunden-Ausblick ist Schnee vorgesehen.':summary.type==='Regen und Schnee'?'Im Zwölf-Stunden-Ausblick sind Regen und Schnee vorgesehen.':summary.type==='Gewitter'?'Im Zwölf-Stunden-Ausblick gibt es ein Gewittersignal.':'Im Zwölf-Stunden-Ausblick ist Regen vorgesehen.';
+  const trend=end.temp-start.temp<=-1?'Die Lufttemperatur sinkt von '+fmt(start.temp)+' auf '+fmt(end.temp)+' °C.':end.temp-start.temp>=1?'Die Lufttemperatur steigt von '+fmt(start.temp)+' auf '+fmt(end.temp)+' °C.':'Die Lufttemperatur bleibt vom Anfang bis zum Ende ähnlich; die Stundenwerte liegen zwischen '+fmt(min)+' und '+fmt(max)+' °C.';
+  const liquidValues=slots.map(p=>Number.isFinite(p.liquid)&&p.liquid>=0?p.liquid:p.snow===0&&![71,73,75,77,85,86].includes(p.code)?p.rain:null);
+  const liquid=liquidValues.every(Number.isFinite)?liquidValues.reduce((sum,v)=>sum+v,0):null;
+  const wet=slots.filter(p=>p.rain>0||p.snow>0||[51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99].includes(p.code));
+  const wetPeriod=wet.length?'Niederschlagssignale in '+wet.length+' von 12 Stundenwerten: '+forecastWindow(wet[0].time,wet[wet.length-1].time)+' Uhr'+(wet.length<slots.indexOf(wet[wet.length-1])-slots.indexOf(wet[0])+1?' mit trockenen Zwischenstunden.':'.'):'Alle zwölf Stundenwerte zeigen trockene Verhältnisse.';
+  const wind=slots.every(p=>Number.isFinite(p.wind))?' Modellwind bis '+fmt(Math.max(...slots.map(p=>p.wind)))+' km/h.':'';
+  return '<div class="situation-heading"><span aria-hidden="true">'+icon+'</span><h3>Lage auf einen Blick · '+warningEscape(place.short)+' · 12 h</h3></div>'+
+    '<p>'+currentText+' '+phase+' '+trend+wind+'</p>'+
+    '<div class="situation-stats"><div class="situation-stat"><small>🌧️ Regen · 12 h</small><b>'+(liquid===null?'Nicht getrennt verfügbar':fmt(liquid)+' l/m²')+'</b></div><div class="situation-stat"><small>❄️ Neuschnee · 12 h</small><b>'+snowAmount(summary.snow)+' cm</b></div><div class="situation-stat"><small>🌡️ Luft · Spanne</small><b>'+fmt(min)+' bis '+fmt(max)+' °C</b></div></div>'+
+    '<p>'+wetPeriod+'</p><p class="situation-period">Modellprognose · '+forecastWindow(start.time,end.time)+' Uhr · Die Neuschneemenge ist keine gemessene Schneeauflage auf der Fahrbahn.</p>';
+}
+function buildSixHourReport(slots,place=selectedPlace(),event=slots){
+  if(slots.length!==6 || slots.some(p=>![p.temp,p.rain,p.snow,p.code].every(Number.isFinite)||p.rain<0||p.snow<0||!KNOWN_WEATHER_CODES.includes(p.code)||typeof p.time!=='string'))return reportItem('ℹ️','Wetterbericht nicht verfügbar','Für einen vollständigen Sechs-Stunden-Bericht fehlen aktuelle Modelldaten.');
+  const stamp=p=>forecastDay(p.time)+' '+p.time.slice(11,16)+' Uhr';
+  const min=Math.min(...slots.map(p=>p.temp)),max=Math.max(...slots.map(p=>p.temp));
+  const total=slots.reduce((sum,p)=>sum+p.rain,0),snow=slots.reduce((sum,p)=>sum+p.snow,0);
+  const counts=slots.reduce((r,p)=>{r[p.code]=(r[p.code]||0)+1;return r;},{});
+  const dominant=Number(Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0]);
+  const [icon,description]=weatherInfo(dominant,slots.every(p=>p.isDay===true)?true:slots.every(p=>p.isDay===false)?false:null);
+  const changes=slots.filter((p,i)=>i===0||weatherInfo(p.code,p.isDay)[1]!==weatherInfo(slots[i-1].code,slots[i-1].isDay)[1]);
+  const evolution=changes.length===1?'Der Wettercharakter bleibt im Modell über den gesamten Zeitraum ähnlich.':changes.map((p,i)=>(i?'Ab ':'Zunächst ab ')+stamp(p)+': '+weatherInfo(p.code,p.isDay)[1]+'.').join(' ');
+  const isWet=p=>p.rain>0||p.snow>0||[51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99].includes(p.code);
+  const windows=[];
+  slots.forEach((p,i)=>{if(!isWet(p))return;const type=precipType(p);const previous=windows[windows.length-1];if(previous&&previous.end===i-1&&previous.type===type)previous.end=i;else windows.push({start:i,end:i,type});});
+  const describeWindow=w=>{const a=slots[w.start],b=slots[w.end];return w.start===w.end?'Stundenwert '+stamp(a):'Stundenwerte von '+stamp(a)+' bis '+stamp(b);};
+  const wetText=windows.length?windows.map(w=>{const label=w.type==='gefrierend'?'Gefrierender Regen oder Nieselregen':w.type==='Schnee'?'Schnee / Schneeschauer':w.type==='Regen und Schnee'?'Regen und Schnee / Schneeregen':w.type==='Gewitter'?'Gewitter mit Niederschlag':'Regen / Nieselregen / Schauer';return label+': '+describeWindow(w)+'.';}).join(' ')+' Beginn, Ende und Niederschlagsart können vom stündlichen Modell abweichen.':'Für die nächsten sechs Stunden zeigt das Modell weitgehend trockene Verhältnisse.';
+  const liquidValues=slots.map(p=>Number.isFinite(p.liquid)&&p.liquid>=0?p.liquid:p.snow===0&&![71,73,75,77,85,86].includes(p.code)?p.rain:null);
+  const liquid=liquidValues.every(Number.isFinite)?liquidValues.reduce((sum,v)=>sum+v,0):null;
+  const rainWindows=windows.filter(w=>w.type!=='Schnee');
+  const snowWindows=windows.filter(w=>w.type==='Schnee'||w.type==='Regen und Schnee'||slots.slice(w.start,w.end+1).some(p=>p.snow>0));
+  const rainText=(rainWindows.length?'Regen bzw. flüssiger Niederschlag: '+rainWindows.map(describeWindow).join('; ')+'. ':'Kein Regen im Modell vorgesehen. ')+(liquid===null?'Die reine Regenmenge ist nicht getrennt verfügbar.': 'Erwartete flüssige Menge: '+fmt(liquid)+' l/m² in sechs Stunden.')+(slots.some(p=>[56,57,66,67].includes(p.code))?' Darunter gefrierender Regen oder Nieselregen: Vereisung möglich.':'');
+  const snowText=(snowWindows.length?'Schnee bzw. Schneeregen: '+snowWindows.map(describeWindow).join('; ')+'. ':'Kein Schneefall im Modell vorgesehen. ')+'Berechneter Neuschnee: '+snowAmount(snow)+' cm in sechs Stunden. '+(snow>0?'Das ist keine gemessene Schneeauflage auf der Strasse; Fahrbahntemperatur und Schmelzen beeinflussen, was liegen bleibt.':'');
+  const amounts='Erwarteter Niederschlag insgesamt: '+fmt(total)+' mm Wasseräquivalent, einschliesslich eines möglichen Schneeanteils.';
+  const delta=slots[5].temp-slots[0].temp;
+  const trend=delta<=-1?'Die Temperatur sinkt im Verlauf.':delta>=1?'Die Temperatur steigt im Verlauf.':'Die Temperatur bleibt vom Anfang bis zum Ende relativ beständig.';
+  const coldest=slots.find(p=>p.temp===min);
+  const winds=slots.map(p=>p.wind).filter(Number.isFinite);
+  const wind=winds.length===6?'Der mittlere Modellwind liegt zwischen '+fmt(Math.min(...winds))+' und '+fmt(Math.max(...winds))+' km/h.':'Eine vollständige Windprognose liegt nicht vor.';
+  const signals=warningSignals(slots);
+  let road=signals[2].hits.length?'Das Modell zeigt gefrierenden Niederschlag. Mit Vereisung von Fahrbahnen und Gehwegen muss gerechnet werden; die örtlichen Verhältnisse kontrollieren.':signals[1].hits.length?'Schneefall ist im Modell vorgesehen. Mögliche Schneeauflage und Räumbedarf vor Ort prüfen.':signals[0].hits.length?'Das Modell zeigt ein mögliches Glättesignal. Feuchte Stellen, Brücken und exponierte Abschnitte besonders kontrollieren.':min<=2?'Die Lufttemperatur liegt zeitweise nahe am Gefrierbereich. Fahrbahnen können kälter sein; Restnässe und sensible Stellen kontrollieren.':'Aus Temperatur und Niederschlag ergibt sich im Modell kein ausgeprägtes winterliches Signal.';
+  road+=' Dies ist eine Modellbeurteilung, keine gemessene Fahrbahnprognose.';
+  if(event.length===12){const risk=riskForSlots(slots,event);road+=' '+risk[0]+' · '+risk[2]+'. '+risk[3]+' Die Mengenfarbe bezieht sich auf das genannte 12-Stunden-Fenster; der Wetterbericht beschreibt die nächsten 6 Stunden.';}
+  const reportRisk=event.length===12?riskForSlots(slots,event):riskForSlots(slots);
+  const rainColor=rainWarning(rainEvent(event)).color;
+  const snowColor=event.length===12?snowWarning(event.reduce((sum,p)=>sum+p.snow,0)).color:'unknown';
+  return [
+    reportItem(icon,'Wetterlage · für die nächsten sechs Stunden', place.name+' · '+forecastWindow(slots[0].time,slots[5].time)+' Uhr. Überwiegend '+description+'. '+evolution+' '+wetText),
+    reportItem('🌧️','Regen · Menge und Zeitfenster',rainText+' '+amounts,rainColor),
+    reportItem('🌨️','Schnee · Menge und Zeitfenster',snowText,snowColor),
+    reportItem('🌡️','Temperatur und Wind',trend+' Die Modelltemperaturen liegen zwischen '+fmt(min)+' und '+fmt(max)+' °C. Der tiefste Stundenwert ist für '+stamp(coldest)+' vorgesehen. '+wind),
+    reportItem('🚧','Einordnung für den Winterdienst',road,reportRisk[1])
+  ].join('');
+}
+function seasonalPeriods(data,now=new Date()){
+  const day=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+  const start=Date.parse(day+'T00:00:00Z'),end=start+70*86400000,late=start+42*86400000;
+  const read=(kind)=>{
+    const block=data?.[kind],units=data?.[kind+'_units'];
+    if(!Array.isArray(block?.time)||!['K','°C'].includes(units?.temperature_2m_anomaly)||units?.precipitation_anomaly!=='mm')return [];
+    return block.time.flatMap((date,i)=>{
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return [];
+      const t=Date.parse(date+'T00:00:00Z');const until=kind==='weekly'?t+7*86400000:Date.UTC(Number(date.slice(0,4)),Number(date.slice(5,7)),1);
+      const temp=block.temperature_2m_anomaly?.[i],precip=block.precipitation_anomaly?.[i];
+      if(!Number.isFinite(t)||!Number.isFinite(temp)||!Number.isFinite(precip)||until<=start||t>=end||kind==='monthly'&&until<=late)return [];
+      return [{date,start:t,end:until,temp,precip}];
+    });
+  };
+  return {start,end,weeks:read('weekly').filter(p=>p.start<late),months:read('monthly')};
+}
+function renderSeasonal(data,now=new Date(),place=selectedPlace()){
+  const periods=seasonalPeriods(data,now);
+  if(!periods.weeks.length&&!periods.months.length)throw Error('Keine aktuellen Langfristdaten');
+  const date=t=>new Intl.DateTimeFormat('de-CH',{timeZone:'UTC',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(t));
+  const signed=v=>(v>0?'+':'')+fmt(v);
+  const tempText=v=>v>0?'wärmer als das Modellklima':v<0?'kälter als das Modellklima':'beim Modellklima';
+  const precipText=v=>v>0?'mehr':v<0?'weniger':'gleich viel';
+  $('#seasonalPeriod').textContent=date(periods.start)+' bis '+date(periods.end-86400000)+' · Region '+place.name+', grobes Modellraster';
+  const early=periods.weeks.slice(0,2);
+  const earlyText=early.length?early.map(p=>date(p.start)+': '+signed(p.temp)+' °C, '+signed(p.precip)+' mm Niederschlag gegenüber dem Modellklima').join('; ')+'.':'Für die ersten Wochen liegen keine vollständigen Wochensignale vor.';
+  const lateText=periods.months.length?periods.months.map(p=>new Intl.DateTimeFormat('de-CH',{timeZone:'UTC',month:'long',year:'numeric'}).format(new Date(p.start))+': '+signed(p.temp)+' °C ('+tempText(p.temp)+'), '+signed(p.precip)+' mm Niederschlag ('+precipText(p.precip)+' als im Modellklima).').join(' '):'Für Woche 7 bis 10 liegen keine vollständigen Monatsdaten vor.';
+  $('#seasonalSummary').innerHTML=[
+    reportItem('📅','Erste Wochen · Wochensignale',earlyText+' Die Abweichungen gelten für ganze Kalenderwochen, auch wenn die aktuelle Woche bereits begonnen hat.'),
+    reportItem('🌍','Woche 7 bis 10 · gröbere Monatstendenz',lateText+' Diese Werte gelten für ganze Monate. Daraus lassen sich keine einzelnen Schnee- oder Frosttage bestimmen.'),
+    reportItem('❄️','Bedeutung für Winterwetter','Negative Temperaturabweichungen bedeuten ein kühleres Mittel, positive ein wärmeres Mittel. Das ist keine Frostwahrscheinlichkeit. Mehr Niederschlag bedeutet nicht automatisch mehr Schnee. Ein konkretes Signal für einen Wintereinbruch ist damit nicht belegt.')
+  ].join('');
+  $('#seasonalDetails').innerHTML='<p><b>Wochendaten · ECMWF EC46</b></p>'+periods.weeks.map(p=>'<p>'+date(p.start)+' bis '+date(p.end-86400000)+': ΔT '+signed(p.temp)+' °C · Δ Niederschlag '+signed(p.precip)+' mm</p>').join('')+'<p><b>Monatsdaten · ECMWF SEAS5</b></p><p>'+lateText+'</p><p>Abweichungen vom langjährigen Modellklima, keine absoluten Temperaturen oder Niederschlagsmengen. Die Daten sind nicht lokal bias-korrigiert und beschreiben ein Gebiet von etwa 36 km Rasterweite. Modellmittel glätten einzelne Extremereignisse. Keine zusätzliche Warnstufe aus diesen Langfristdaten.</p>';
+  $('#seasonalStatus').textContent='Langfristdaten abgerufen: '+bvisionDate(now.getTime())+' · ECMWF EC46 / SEAS5 über Open-Meteo · Wochendaten bis etwa 6 Wochen, danach Monatsmittel.';
+}
+// Works on Safari versions without AbortSignal.timeout. The deadline also
+// covers JSON body reads and fetch implementations that ignore cancellation.
+async function requestJSON(url,options={},timeout=15000,parentSignal){
+  const controller=new AbortController();let timer,abort;
+  const cancelled=new Promise((resolve,reject)=>{
+    abort=()=>{controller.abort();reject(Error('Abruf abgebrochen'));};
+    timer=setTimeout(()=>{controller.abort();reject(Error('Zeitüberschreitung beim Datenabruf'));},timeout);
+    if(parentSignal?.aborted)abort();else parentSignal?.addEventListener('abort',abort,{once:true});
+  });
+  const request=(async()=>{const response=await fetch(url,{...options,signal:controller.signal});if([401,403].includes(response.status)&&String(url).startsWith('/api/')){const error=Error('Anmeldung oder Freigabe erforderlich.');error.accessDenied=true;if(typeof window!=='undefined')window.location?.replace?.('/');throw error;}return {response,data:response.ok?await response.json():null};})();
+  try{return await Promise.race([request,cancelled]);}
+  finally{clearTimeout(timer);parentSignal?.removeEventListener('abort',abort);}
+}
+async function loadSeasonal(run){
+  const place=run?.place||selectedPlace();
+  try{
+    let result=await requestJSON('/api/seasonal?location='+place.id,{cache:'no-store'},8000,run?.controller.signal).catch(error=>{if(error.accessDenied)throw error;return null;});
+    if(run&&!run.current())return;
+    if(!result?.response.ok){
+      const url=new URL('https://seasonal-api.open-meteo.com/v1/seasonal');
+      url.search=new URLSearchParams({latitude:place.lat,longitude:place.lon,timezone:'Europe/Zurich',forecast_days:'100',models:'ecmwf_seasonal_ensemble_mean_seamless',weekly:'temperature_2m_anomaly,precipitation_anomaly',monthly:'temperature_2m_anomaly,precipitation_anomaly'}).toString();
+      result=await requestJSON(url.href,{cache:'no-store',credentials:'omit'},20000,run?.controller.signal);
+    }
+    if(run&&!run.current())return;
+    if(!result.response.ok)throw Error('Langfristabruf fehlgeschlagen');
+    renderSeasonal(result.data,new Date(),place);
+  }catch{
+    if(run&&!run.current())return;
+    $('#seasonalStatus').textContent='Langfristdaten derzeit nicht verfügbar. Kein aktuelles 10-Wochen-Signal ableitbar.';
+    $('#seasonalSummary').innerHTML='';$('#seasonalDetails').innerHTML='Keine aktuellen Wochen- oder Monatsdaten geladen.';
+  }
+}
+async function loadSeasonalUs(run){
+  $('#seasonalUsMaps').innerHTML='';
+  $('#seasonalUsStatus').textContent='NOAA-CFSv2-Modellstand wird geprüft.';
+  try{
+    const {response,data}=await requestJSON('/api/seasonal-us',{cache:'no-store'},18000,run?.controller.signal);
+    if(run&&!run.current())return;
+    if(!response.ok||!Array.isArray(data?.models)||data.models.length!==2||!Number.isFinite(data.fetched_at)||Date.now()-data.fetched_at>21600000||data.fetched_at>Date.now()+60000)throw Error('NOAA-Daten fehlen');
+    const date=value=>new Intl.DateTimeFormat('de-CH',{timeZone:'UTC',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value+'T00:00:00Z'));
+    for(const model of data.models){
+      if(!['temperature','precipitation'].includes(model.variable)||!/^\d{4}-\d{2}-\d{2}$/.test(model.initial_to)||Date.now()-Date.parse(model.initial_to+'T00:00:00Z')>14*86400000||!Array.isArray(model.maps)||model.maps.length!==3)throw Error('NOAA-Daten unvollständig');
+      for(const map of model.maps)if(!/^\d{4}-\d{2}-01$/.test(map.month)||!/^https:\/\/www\.cpc\.ncep\.noaa\.gov\/products\/CFSv2\/imagesInd3\/eu(?:T2m|Prec)MonInd[1-3]\.gif$/.test(map.url))throw Error('NOAA-Karte ungültig');
+    }
+    $('#seasonalUsStatus').textContent=data.models.map(m=>(m.variable==='temperature'?'Temperatur':'Niederschlag')+': Ensemble mit Startdaten '+date(m.initial_from)+' bis '+date(m.initial_to)).join(' · ')+'. Quelle: NOAA / NCEP CFSv2, Monatsberechnungen für Europa.';
+    $('#seasonalUsMaps').innerHTML=data.models.flatMap(model=>model.maps.map(map=>{
+      const title=(model.variable==='temperature'?'Temperaturabweichung':'Niederschlagsabweichung')+' · '+new Intl.DateTimeFormat('de-CH',{timeZone:'UTC',month:'long',year:'numeric'}).format(new Date(map.month+'T00:00:00Z'));
+      return '<figure><figcaption>'+title+'</figcaption><a href="'+map.url+'" target="_blank" rel="noopener noreferrer"><img loading="lazy" src="'+map.url+'" alt="NOAA CFSv2 Europa: '+title+'"></a><p class="station-note">'+(model.variable==='temperature'?'Δ Temperatur in °C':'Δ Niederschlag: Einheit auf der Karte beachten')+' · <a href="'+(model.variable==='temperature'?'https://www.cpc.ncep.noaa.gov/products/CFSv2/htmls/euT2me3Mon.html':'https://www.cpc.ncep.noaa.gov/products/CFSv2/htmls/euPrece3Mon.html')+'" target="_blank" rel="noopener noreferrer">NOAA-Original und Modellstand</a></p></figure>';
+    })).join('');
+  }catch{
+    if(run&&!run.current())return;
+    $('#seasonalUsStatus').textContent='NOAA CFSv2 derzeit nicht verfügbar. Ein aktueller Vergleich mit dem amerikanischen Modell ist nicht möglich.';
+    $('#seasonalUsMaps').innerHTML='';
+  }
+}
+async function loadSeasonalEurope(run){
+  $('#seasonalEuropeMaps').innerHTML='';
+  $('#seasonalEuropeStatus').textContent='Europäische Modellkarten werden geladen.';
+  try{
+    const {response,data}=await requestJSON('/api/seasonal-europe',{cache:'no-store'},25000,run?.controller.signal);
+    if(run&&!run.current())return;
+    const products=['extended-anomaly-2t','extended-anomaly-tp','seasonal_system5_standard_2mtm','seasonal_system5_standard_rain'];
+    if(!response.ok||!Number.isFinite(data?.fetched_at)||Date.now()-data.fetched_at>21600000||data.fetched_at>Date.now()+60000||!Array.isArray(data.maps)||data.maps.length<1||data.maps.length>4)throw Error('ECMWF-Daten fehlen');
+    for(const map of data.maps)if(!products.includes(map.product)||typeof map.title!=='string'||!/^https:\/\/charts\.ecmwf\.int\/content\/[A-Za-z0-9-]+\.png$/.test(map.url))throw Error('ECMWF-Karte ungültig');
+    $('#seasonalEuropeStatus').textContent=data.maps.length+' von 4 ECMWF-Karten verfügbar · abgerufen '+bvisionDate(data.fetched_at)+'. Modelllauf und Gültigkeitszeitraum in den Karten beachten.';
+    $('#seasonalEuropeMaps').innerHTML=data.maps.map(map=>'<figure><figcaption>'+warningEscape(map.title)+' · '+warningEscape(map.model)+'</figcaption><a href="'+map.url+'" target="_blank" rel="noopener noreferrer"><img loading="lazy" src="'+map.url+'" alt="ECMWF Europa: '+warningEscape(map.title)+'"></a><p class="station-note">'+(map.model==='EC46'?'Wochenmittel gegenüber dem Modellklima.':'Saisonale Darstellung; Zeitraum, Grösse und Wahrscheinlichkeit auf der Karte beachten.')+' <a href="https://charts.ecmwf.int/products/'+map.product+'?'+(map.model==='EC46'?'projection=opencharts_europe':'area=EURO')+'" target="_blank" rel="noopener noreferrer">ECMWF-Originalkarte und weitere Zeiträume</a></p></figure>').join('');
+    for(const img of document.querySelectorAll?.('#seasonalEuropeMaps img')||[])img.addEventListener('error',()=>{img.hidden=true;img.closest('figure').querySelector('figcaption').textContent+=' · Bild derzeit nicht verfügbar, Originalkarte öffnen.';});
+  }catch{
+    if(run&&!run.current())return;
+    $('#seasonalEuropeStatus').textContent='Europäische ECMWF-Modellkarten derzeit nicht verfügbar.';
+    $('#seasonalEuropeMaps').innerHTML='';
+  }
+}
+async function getForecast(model,signal,place=selectedPlace()){
+  let result;
+  try{
+    result=await requestJSON('/api/weather?model='+model+'&location='+place.id,{cache:'no-store'},8000,signal);
+    if(!result.response.ok)throw Error('Serverabruf nicht verfügbar');
+  }catch(error){
+    if(error.accessDenied)throw error;
+    if(signal?.aborted)throw Error('Abruf abgebrochen');
+    // Same official source and exact same model, without sharing credentials.
+    // Direct browser requests can remain available when server egress is blocked.
+    const models={meteoswiss:'meteoswiss_icon_seamless',ecmwf:'ecmwf_ifs',gfs:'gfs_seamless'};
+    if(!models[model])throw Error('Unbekanntes Wettermodell');
+    const direct=new URL('https://api.open-meteo.com/v1/forecast');
+    direct.search=new URLSearchParams({latitude:place.lat,longitude:place.lon,timezone:'Europe/Zurich',forecast_days:'4',models:models[model],current:'temperature_2m,wind_speed_10m,wind_gusts_10m,weather_code,is_day',hourly:'temperature_2m,dew_point_2m,precipitation,rain,showers,snowfall,weather_code,snowfall_height,wind_speed_10m,is_day'}).toString();
+    result=await requestJSON(direct.href,{cache:'no-store',credentials:'omit'},20000,signal);
+  }
+  if(!result.response.ok)throw Error('Wettermodell nicht erreichbar');
+  const data=result.data;
+  if(!data.current || !Array.isArray(data.hourly?.time) || !data.hourly.time.length)throw Error('Wetterdaten unvollständig');
+  return data;
+}
+function modelMetrics(data){
+  if(!data)return null;
+  const slots=nextSlots(data,6);
+  if(slots.length!==6 || slots.some(p=>![p.temp,p.rain,p.snow].every(Number.isFinite)))return null;
+  return {slots,min:Math.min(...slots.map(p=>p.temp)),max:Math.max(...slots.map(p=>p.temp)),precip:slots.reduce((s,p)=>s+p.rain,0),snow:slots.reduce((s,p)=>s+p.snow,0),snowSignal:slots.some(p=>p.snow>0||[71,73,75,77,85,86].includes(p.code)),iceSignal:slots.some(p=>[56,57,66,67].includes(p.code))};
+}
+function renderModelComparison(entries){
+  const active=entries.map(entry=>({...entry,metrics:modelMetrics(entry.data)})).filter(entry=>entry.metrics);
+  $('#activeWeatherSources').innerHTML='<b>Verwendete Wetterdaten</b>'+(active.length?active.map(e=>e.name).join(' · ')+'<br>'+selectedPlace().name+' · gemeinsame Datenschnittstelle: Open-Meteo. Abruf: '+bvisionDate(Date.now())+'.':'Aktuell kein vollständiger Wetterdatenabruf.');
+  const differs=(a,b)=>Math.abs(a.min-b.min)>=2||Math.abs(a.max-b.max)>=2||Math.abs(a.precip-b.precip)>=2||(a.precip>=0.2)!==(b.precip>=0.2)||a.snowSignal!==b.snowSignal||a.iceSignal!==b.iceSignal;
+  const disagreement=active.some((a,i)=>active.slice(i+1).some(b=>differs(a.metrics,b.metrics)));
+  const count=active.length+'/3 Modelle verfügbar';
+  $('#modelSummary').textContent=count+' · '+(disagreement?'Modelle weichen ab · Niederschlag und Glätterisiken beachten.':active.length<3?'Modellvergleich eingeschränkt.':'Die Modelle zeigen ähnliche Signale.');
+  $('#modelSummary').style.color=disagreement?'#94630e':'#35576b';
+  $('#modelComparison').innerHTML=active.map(({name,metrics:m})=>`<p><b>${name}</b><br>${fmt(m.min)} bis ${fmt(m.max)} °C · Gesamtniederschlag ${fmt(m.precip)} mm (Wasseräquivalent) · Neuschnee ${snowAmount(m.snow)} cm</p>`).join('')+'<p>Drei Modellhersteller, eine gemeinsame Schnittstelle. Nur vollständig abgerufene Modelle werden verglichen. Basis der Stundenprognose: '+primaryModelName+'.</p>';
+}
+async function load(run){
+  const models=[{key:'meteoswiss',name:'MeteoSchweiz ICON CH1/CH2'},{key:'ecmwf',name:'ECMWF IFS'},{key:'gfs',name:'NOAA GFS'}];
+  const results=await Promise.allSettled(models.map(async model=>({...model,data:await getForecast(model.key,run?.controller.signal,run?.place||selectedPlace())})));
+  if(run&&!run.current())return;
+  const available=results.filter(r=>r.status==='fulfilled'&&modelMetrics(r.value.data)).map(r=>r.value);
+  if(!available.length)throw Error('Keine Basisprognose verfügbar');
+  const primary=available[0];const data=primary.data;primaryModelName=primary.name;
+  comparisonForecast=available.slice(1);comparisonFetchedAt=Date.now();
+  renderModelComparison(available);
+  const points = nextSlots(data,84); const h12 = points.slice(0,12); const h72 = points.slice(0,72); const current = data.current;
+  if(!h12.length)throw new Error('Keine aktuelle Prognose verfügbar');
+  const [ico, desc] = weatherInfo(current.weather_code ?? h12[0].code,current.is_day===1?true:current.is_day===0?false:h12[0].isDay);
+  const precipitation12=precipitationInfo(h12);
+  const snowline=snowlinePresentation(results.filter(r=>r.status==='fulfilled').map(r=>r.value),h12);
+  const rain12 = h12.reduce((a,b)=>a+b.rain,0); const snow12 = h12.reduce((a,b)=>a+b.snow,0);
+  const min12 = Math.min(...h12.map(x=>x.temp)); const max12 = Math.max(...h12.map(x=>x.temp));
+  $('#todayLabel').textContent = chTime(new Date());
+  $('#nowTime').textContent = timeOnly(new Date());
+  $('#lastUpdate').textContent = 'Letzte Aktualisierung: ' + new Date().toLocaleString('de-CH',{timeZone:'Europe/Zurich'});
+  $('#cards').innerHTML = [
+    card('Aktuell · '+selectedPlace().name, `${fmt(current.temperature_2m)} °C`, `${desc.charAt(0).toUpperCase()+desc.slice(1)}`, ico),
+    card('Taupunkt', `${fmt(h12[0].dew)} °C`, 'Feuchtezustand der Luft', '💧'),
+    card('Niederschlag 12 h', `${fmt(precipitation12.total)} mm`, precipitationCardDetail(precipitation12), precipitation12.icon, precipitationAssessment(h12)),
+    card('Wind', `${fmt(current.wind_speed_10m)} km/h`, `Böen ${fmt(current.wind_gusts_10m)} km/h`, '💨'),
+    card('Schneefallgrenze', snowline.value, snowline.detail, '🌨️')
+  ].join('');
+  const risk = riskForSlots(h12); const ampel = $('#ampelBox'); const light = ampel.querySelector('.light'); const status = $('#ampelStatus');
+  status.textContent = risk[0];status.style.fontSize='50px';
+  $('#ampelExplanation').textContent = risk[2];
+  $('#ampelText').textContent=risk[3];$('#ampelText').dataset.warningColor=risk[1];$('#ampelExplanation').dataset.warningColor=risk[1];
+  $('#situationBrief').innerHTML=buildSituationBrief(h12,current,run?.place||selectedPlace());
+  const palettes={green:['#eaf6ee','#bfe1c6','#4cd079','#2ea45f','#1a9b51'],yellow:['#fff9dc','#dfc45b','#ffe16a','#d3b32e','#796000'],orange:['#fff5df','#f0deb0','#ffd35f','#e1a733','#a37314'],red:['#fdecec','#f0c4c4','#f06b6b','#cc4141','#b63838'],purple:['#f5e7f4','#c790bf','#c36eb5','#863575','#76256a'],unknown:['#edf1f4','#c7d0d8','#a3afb8','#8b99a5','#526474']};
+  const palette=palettes[risk[1]]||palettes.unknown;
+  ampel.style.background=palette[0];ampel.style.borderColor=palette[1];light.style.background='radial-gradient(circle at 35% 35%,'+palette[2]+' 0 35%,'+palette[3]+' 36% 100%)';status.style.color=palette[4];
+  $('#reportList').innerHTML=buildSixHourReport(points.slice(0,6),run?.place||selectedPlace(),h12);
+  warningForecast=data;warningFetchedAt=Date.now();warningFetchFailed=false;renderWarnings();
+  drawChart12(h12);
+  $('#hourlyTable').innerHTML = h12.map(p=>{
+    const [i,d] = weatherInfo(p.code,p.isDay);
+    const hourlyRisk=riskForSlots([p],h12);
+    const critical=['yellow','orange','red','purple'].includes(hourlyRisk[1]);
+    const unavailable=hourlyRisk[1]==='unknown';
+    return `<tr${critical||unavailable?` class="risk-${hourlyRisk[1]}"`:''}>
+      <td>${forecastDay(p.time)} ${p.time.slice(11,16)}${unavailable?'<span class="hourly-risk">Nicht beurteilbar · Prognose unvollständig</span>':critical?`<span class="hourly-risk">⚠ ${hourlyRisk[0]} · ${hourlyRisk[2]}</span><span class="hourly-risk">${hourlyRiskReason(p,h12,hourlyRisk)}</span>`:''}</td>
+      <td>${i} ${d}</td>
+      <td>${fmt(p.temp)} °C</td>
+      <td>${fmt(p.dew)} °C</td>
+      <td>${fmt(p.rain)} mm</td>
+      <td>${snowAmount(p.snow)} cm</td>
+      <td>${precipType(p)}</td>
+      <td>${fmt(p.wind)} km/h</td>
+    </tr>`;
+  }).join('');
+  const groups = extendedForecastGroups(h72);
+  $('#forecastCoverage').textContent=groups.length?groups.length+' vollständige Zeitfenster · '+forecastWindow(groups[0][0].time,groups[groups.length-1].windowEnd)+' Uhr'+(groups.length<8?' · Weitere Zeitfenster nicht vollständig verfügbar.':' · 48 Stunden weiterer Ausblick.'):'Keine vollständigen Sechs-Stunden-Fenster verfügbar.';
+  $('#forecast36').innerHTML = groups.map(g=>{
+    const start=g[0].time; const main=g.find(x=>x.rain>0.1||x.snow>0.1) || g[Math.floor(g.length/2)];
+    const [i,d]=weatherInfo(main.code,main.isDay); const min=Math.min(...g.map(x=>x.temp)); const max=Math.max(...g.map(x=>x.temp)); const rain=g.reduce((a,b)=>a+b.rain,0); const snow=g.reduce((a,b)=>a+b.snow,0); const event=points.slice(points.indexOf(g[0]),points.indexOf(g[0])+12);const risk=event.length===12?riskForSlots(g,event):['OFFEN','unknown','12-Stunden-Bewertung unvollständig'];
+    return `<div class="fcard">
+      <div class="slot">${forecastSlotHeading(start,g.windowEnd)}</div>
+      <div class="ficon">${i}</div>
+      <div class="temp"><span>${fmt(min,0)} °C</span><span class="range-to">bis</span><span>${fmt(max,0)} °C</span></div>
+      <div class="fmeta">${d}</div>
+      <div class="fmeta">Gesamtniederschlag ${fmt(rain)} l/m² (Wasseräquivalent) · Neuschnee ${snowAmount(snow)} cm</div>
+      <div class="fmeta">Art: ${precipitationInfo(g).type}</div>
+      <div style="text-align:center"><span class="pill ${risk[1]}">${risk[0]} · ${risk[2]}</span></div>
+      ${g.some(p=>p.snow>0||[71,73,75,77,85,86].includes(p.code))&&event.length===12?'<div class="fmeta" data-warning-color="'+snowWarning(event.reduce((sum,p)=>sum+p.snow,0)).color+'">Schneefarbe aus '+snowAmount(event.reduce((sum,p)=>sum+p.snow,0))+' cm in 12 h · '+forecastWindow(event[0].time,event[11].time)+' Uhr</div>':''}
+    </div>`;
+  }).join('');
+}
+
+
+// Only measurement data belongs in this document. Never add Bvision credentials,
+// session cookies or tokens. An authenticated background collector must publish
+// bvision-data.json through the dashboard's own protected origin, without secrets.
+// A ChatGPT browser login is not a shared session with this dashboard.
+// Feed schema: {updated_at: ISO timestamp with offset, stations: {riedbach: {
+// station_id: "041031202002", observed_at: ISO timestamp with offset,
+// road_temperature_c: number|null, freezing_point_c: number|null,
+// road_condition: string|null, air_temperature_c: number|null,
+// relative_humidity_pct: number|null}, schwarzenburgstrasse: {...},
+// melchenbuehlweg: {...}}}. Missing stations/fields are explicitly unavailable.
+const BVISION_INTERVAL = 15 * 60 * 1000;
+const BVISION_MAX_AGE = 20 * 60 * 1000;
+// No credentials and no cross-origin Bvision requests from this page.
+const bvisionStationIds = {riedbach:'041031202002', schwarzenburgstrasse:'041031202004', melchenbuehlweg:'041031202005',gamsenbruecke:null,meikirch:null};
+const bvisionStationNames={gamsenbruecke:'Gamsenbrücke Principal',meikirch:'Meikirch'};
+const bvisionPlaceStations={bern:['riedbach','schwarzenburgstrasse','melchenbuehlweg'],blatten:['gamsenbruecke'],meikirch:['meikirch']};
+function bvisionIdentity(item,key,id){return !!item&&(id?item.station_id===id:typeof item.station_id==='string'&&/^\d{1,32}$/.test(item.station_id)&&item.station_name===bvisionStationNames[key]);}
+const bvisionSnapshot = {"updated_at": "2026-10-21T22:39:00+02:00", "stations": {"riedbach": {"station_id": "041031202002", "observed_at": "2026-10-21T22:38:00+02:00", "road_temperature_c": 8.1, "freezing_point_c": null, "road_condition": "Fahrbahn nass Stufe 1", "air_temperature_c": 6.6, "relative_humidity_pct": 89.2}, "schwarzenburgstrasse": {"station_id": "041031202004", "observed_at": "2026-10-21T22:38:00+02:00", "road_temperature_c": 8.2, "freezing_point_c": null, "road_condition": "Nass", "air_temperature_c": 7.4, "relative_humidity_pct": 83.4}, "melchenbuehlweg": {"station_id": "041031202005", "observed_at": "2026-10-21T22:37:00+02:00", "road_temperature_c": 8.8, "freezing_point_c": null, "road_condition": "Nass", "air_temperature_c": 7.5, "relative_humidity_pct": 82.8}}};
+let bvisionData = bvisionSnapshot;
+let bvisionMode = 'snapshot';
+let bvisionError = '';
+let cloudReceivedAt=null;
+let cloudReadError='';
+let cloudReadInFlight=null;
+let cloudConfigTimeout;
+let bvisionBusy = false;
+let bvisionTimer;
+let bvisionNextAttempt = Date.now() + BVISION_INTERVAL;
+function bvisionTimestamp(value){
+  if(typeof value !== 'string' || !/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return NaN;
+  const stamp = Date.parse(value);
+  return Number.isFinite(stamp) && stamp <= Date.now()+5*60*1000 ? stamp : NaN;
+}
+function bvisionTemperature(value){
+  return typeof value === 'number' && Number.isFinite(value) && value >= -40 && value <= 60;
+}
+function bvisionFreezingPoint(value){return bvisionTemperature(value)&&value<=0;}
+function bvisionDate(stamp){
+  return new Date(stamp).toLocaleString('de-CH',{timeZone:'Europe/Zurich',weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+' Uhr';
+}
+function stationTemperatureLevel(item, observed, now=Date.now()){
+  if(!item || !bvisionTemperature(item.road_temperature_c) || !bvisionFreezingPoint(item.freezing_point_c) || !Number.isFinite(observed) || observed>now+5*60*1000 || now-observed>BVISION_MAX_AGE)return 'none';
+  const gap=item.road_temperature_c-item.freezing_point_c;
+  // Fixed-point comparison prevents decimal subtraction moving an exact boundary.
+  const distance=Math.round(gap*1e9);
+  return distance<1e9?'red':distance<2e9?'orange':'none';
+}
+function roadSurfaceState(condition){
+  const value=String(condition||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/(?:kein(?:e|en|er)?\s+(?:schnee|eis|glatte|glaette)|schneefrei|eisfrei)/g,'');
+  if(/schneematsch|schnee.*matsch|slush/.test(value))return {kind:'slush',level:'orange',label:'ORANGE · Schneematsch gemeldet',detail:'Schneematsch auf der Fahrbahn. Rutschgefahr und möglichen Räumbedarf vor Ort prüfen.'};
+  if(/(?:^|[^a-z])eis(?:[^a-z]|$)|vereis|glatteis|eisglatte|glaette|glatte|frozen|icy/.test(value))return {kind:'ice',level:'orange',label:'ORANGE · Eis / Glätte gemeldet',detail:'Boschung meldet einen winterlichen Fahrbahnzustand. Vor Ort prüfen; der Temperaturabstand wird separat bewertet.'};
+  if(/schnee|snow/.test(value))return {kind:'snow',level:'orange',label:'ORANGE · Schnee auf der Fahrbahn',detail:'Boschung meldet Schnee. Eine Schneehöhe auf der Fahrbahn ist daraus nicht ableitbar.'};
+  if(/nass|wet|wasserfilm/.test(value))return {kind:'wet',level:'yellow',label:'GELB · Nässe beobachten',detail:'Nasse Fahrbahn gemeldet. Bei Abkühlung den Temperaturabstand zum Gefrierpunkt beachten.'};
+  if(/feucht|damp|moist/.test(value))return {kind:'damp',level:'yellow',label:'GELB · Feuchtigkeit beobachten',detail:'Feuchte Fahrbahn gemeldet. Brücken und schattige Stellen bei Abkühlung besonders beachten.'};
+  if(/trocken|dry/.test(value))return {kind:'dry',level:'neutral',label:'Trocken gemeldet',detail:'Zustandsmeldung der Station. Die Temperaturbewertung steht separat darunter.'};
+  return {kind:'unknown',level:'unknown',label:'Fahrbahnzustand nicht bewertet',detail:'Keine eindeutig zuordenbare Zustandsmeldung. Es wird kein Schnee- oder Eiszustand geschätzt.'};
+}
+function roadSurfaceGraphic(){
+  return '<svg viewBox="0 0 72 88" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="2" width="52" height="84" rx="14" fill="#29465B"/><path d="M17 13v62m38-62v62" stroke="#95B1C1" stroke-width="2"/><path d="M36 12v11m0 10v11m0 10v11m0 10v3" stroke="white" stroke-width="3" stroke-linecap="round"/><g class="surface-wet" fill="#67C7F4"><path d="M24 25c-6 8-7 10-7 13a7 7 0 0 0 14 0c0-3-1-5-7-13Z"/><path d="M48 49c-5 6-6 9-6 11a6 6 0 0 0 12 0c0-2-1-5-6-11Z"/></g><g class="surface-snow" fill="white"><path d="M10 16c9-7 16 6 26 1s17-3 26 1v10c-9-5-18-2-26 1S19 22 10 29Z"/><path d="M10 60c8-7 17 6 26 1s17-2 26 2v11c-9-5-18-2-26 1S18 69 10 75Z"/><circle cx="24" cy="44" r="3"/><circle cx="48" cy="39" r="3"/></g><g class="surface-ice" stroke="#9CE6FF" stroke-width="3" stroke-linecap="round"><path d="M36 24v40M19 34l34 20M19 54l34-20M31 28l5 5 5-5m-10 32 5-5 5 5M21 39l6-2-1-6m21 26-1-6 6-2M21 49l6 2-1 6m21-26-1 6 6 2"/></g></svg>';
+}
+
+function renderBvision(){
+  let redCount=0,orangeCount=0,winterSurfaceCount=0;
+  const visibleKeys=bvisionPlaceStations[selectedPlace().id]||[];
+  for(const [key,id] of Object.entries(bvisionStationIds)){
+    const root = document.querySelector('[data-station="'+key+'"]');
+    if(!root)continue;
+    root.hidden=!visibleKeys.includes(key);
+    const item = bvisionData.stations[key];
+    const identified = bvisionIdentity(item,key,id);
+    const observed = identified ? bvisionTimestamp(item.observed_at) : NaN;
+    const valid = identified && Number.isFinite(observed);
+    const stale = valid && Date.now()-observed > BVISION_MAX_AGE;
+    const text = (sel,value) => root.querySelector(sel).textContent = value;
+    text('.temp', valid && bvisionTemperature(item.road_temperature_c) ? fmt(item.road_temperature_c)+' °C' : 'Kein Messwert');
+    text('.freezing', valid && bvisionFreezingPoint(item.freezing_point_c) ? fmt(item.freezing_point_c)+' °C' : 'Kein Messwert');
+    const condition = valid && typeof item.road_condition==='string' && item.road_condition.trim() ? item.road_condition.trim().slice(0,100) : 'Kein Messwert';
+    const surface=roadSurfaceState(condition);
+    const observe=valid&&bvisionTemperature(item.road_temperature_c)&&item.road_temperature_c<=4;
+    if(surface.level==='yellow'&&!observe){surface.level='neutral';surface.label=surface.kind==='wet'?'Nasse Fahrbahn gemeldet':'Feuchte Fahrbahn gemeldet';}
+
+    const surfaceCurrent=valid&&!stale&&bvisionMode!=='snapshot'&&!bvisionError;
+    root.dataset.observe=String(surfaceCurrent&&observe);
+    const winterSurface=surfaceCurrent&&surface.level==='orange';
+    if(winterSurface&&!root.hidden)winterSurfaceCount++;
+    root.dataset.surface=surface.kind;
+    root.dataset.surfaceLevel=surfaceCurrent?surface.level:'unknown';
+    root.querySelector('.surface-art').innerHTML=roadSurfaceGraphic();
+    text('.road-condition', condition);
+    text('.surface-state',surfaceCurrent?surface.label:valid?'GRAU · Letzter gemeldeter Zustand':'GRAU · Zustand nicht verfügbar');
+    text('.surface-detail',surfaceCurrent?surface.detail:valid?'Diese Zustandsmeldung ist nicht als aktueller Fahrbahnzustand bestätigt. Messzeit beachten.':'Es liegt keine gültige aktuelle Stationsmeldung vor.');
+    text('.air-temperature',valid && bvisionTemperature(item.air_temperature_c) ? fmt(item.air_temperature_c)+' °C' : 'Kein Messwert');
+    for(const [selector,value] of [['.temp',item?.road_temperature_c],['.freezing',item?.freezing_point_c],['.air-temperature',item?.air_temperature_c]])root.querySelector(selector).dataset.unavailable=String(!valid||!(selector==='.freezing'?bvisionFreezingPoint(value):bvisionTemperature(value)));
+    text('.humidity',valid && typeof item.relative_humidity_pct==='number' && Number.isFinite(item.relative_humidity_pct) && item.relative_humidity_pct>=0 && item.relative_humidity_pct<=100 ? fmt(item.relative_humidity_pct)+' % Feuchte' : 'Feuchte: kein Messwert');
+    text('.updated',valid ? 'Messung: '+bvisionDate(observed) : 'Messzeitpunkt fehlt oder ist ungültig');
+    const state = root.querySelector('.station-state');
+    const hasCore = valid && bvisionTemperature(item.road_temperature_c) && condition!=='Kein Messwert';
+    root.dataset.dataQuality=surfaceCurrent?(hasCore?'complete':'partial'):'unknown';
+    state.dataset.level = surfaceCurrent?'fresh':'stale';
+    state.textContent = !valid ? 'Keine gültigen Daten' : stale ? 'Daten veraltet' : bvisionMode==='snapshot' ? 'Momentaufnahme' : bvisionError ? 'Abruf fehlgeschlagen' : 'Quelle aktuell · '+Math.max(0,Math.floor((Date.now()-observed)/60000))+' Min.';
+    const gap = valid && bvisionTemperature(item.road_temperature_c) && bvisionFreezingPoint(item.freezing_point_c) ? item.road_temperature_c-item.freezing_point_c : null;
+    const level=valid && (bvisionMode==='browser'||bvisionMode==='cloud') && !bvisionError ? stationTemperatureLevel(item,observed) : 'none';
+    root.dataset.alarm=level;
+    text('.station-gap', gap===null ? 'Temperaturreserve derzeit nicht berechenbar' : 'Reserve über Gefrierpunkt: '+fmt(gap)+' °C'+(stale?' · veraltete Messung':''));
+    if(level==='red'&&!root.hidden)redCount++;
+    if(level==='orange'&&!root.hidden)orangeCount++;
+
+    text('.assessment-title',!surfaceCurrent?'Bewertung nicht aktuell':level==='red'?'ROT · Handlungsalarm':level==='orange'?'ORANGE · Erhöhte Aufmerksamkeit':observe?'GELB · Ab 4 °C beobachten':'Kein Temperaturalarm');
+    text('.assessment-text',!surfaceCurrent?'Messwerte älter als 20 Minuten oder Quelle nicht bestätigt. Keine aktuelle Alarmbewertung.':level==='red'?(gap<=0?'Fahrbahn am oder unter dem gemessenen Gefrierpunkt.':'Nur '+fmt(gap)+' °C Reserve, weniger als 1 °C.')+' Fahrbahn sofort kontrollieren und erforderliche Winterdienstmassnahmen einleiten.':level==='orange'?'Noch '+fmt(gap)+' °C Reserve: mindestens 1 °C, aber weniger als 2 °C. Verlauf eng beobachten und Massnahmen vorbereiten.':gap===null?'Die aktive Boschung-Sonde liefert den Gefrierpunkt erst nach einem geeigneten Messzyklus bei passenden Temperatur- und Feuchtebedingungen. Ein fehlender Wert allein ist kein Alarm.'+(observe?' Fahrbahntemperatur höchstens 4 °C: Abkühlung und Feuchtigkeit beobachten.':''):observe?'Fahrbahntemperatur höchstens 4 °C. Abkühlung und Feuchtigkeit beobachten; aktuell kein Abstandsalarm.':'Fahrbahn über 4 °C; aktuell kein Temperaturalarm. Zustandsmeldung zusätzlich beachten.');
+    text('.station-quality',!valid ? 'Station oder Messzeitpunkt konnte nicht zugeordnet werden.' : (bvisionMode==='snapshot' ? 'Gespeicherter Bvision-Abruf' : bvisionMode==='cloud'?'Online-Messung':'Bvision über Messwertbrücke in diesem Browser') + (stale ? ' · nur letzter bekannter Stand' : '') + (!bvisionFreezingPoint(item.freezing_point_c) ? ' · Gefrierpunkt: noch kein aktiver Messwert' : ''));
+  }
+  const alarmSummary=$('#roadAlarmSummary');
+  alarmSummary.hidden=redCount+orangeCount+winterSurfaceCount===0;
+  alarmSummary.dataset.level=redCount?'red':orangeCount||winterSurfaceCount?'orange':'none';
+  alarmSummary.textContent=[redCount?'🔴 '+redCount+' Messstelle(n) rot · Temperaturreserve unter 1 °C':'',orangeCount?'🟠 '+orangeCount+' Messstelle(n) orange · Temperaturreserve 1 bis unter 2 °C':'',winterSurfaceCount?'❄ '+winterSurfaceCount+' Messstelle(n) · Schnee, Schneematsch oder Eis gemeldet':''].filter(Boolean).join(' · ');
+  const fetched = bvisionTimestamp(bvisionData.updated_at);
+  $('#bvisionStatus').className='station-note';
+  const selectedAvailable=visibleKeys.some(key=>bvisionData.stations[key]);
+  $('#bvisionStatus').textContent = !selectedAvailable?'Für diese Messstelle wurden noch keine gültigen Boschung-Daten empfangen. Messwertbrücke 1.4 verwenden und Station in Bvision sichtbar halten.':bvisionMode==='snapshot'
+    ? 'Gespeicherter alter Messstand. '+(cloudReadError || 'Online-Daten werden geprüft.')
+    : (bvisionMode==='cloud'?'Boschung-Messwerte online verfügbar.':bvisionError?'Messwertübernahme: '+bvisionError:'Lokale Messwertbrücke verbunden.')+' Letzte Übernahme: '+bvisionDate(fetched)+'.'+(cloudReadError?' '+cloudReadError:'');
+  $('#bvisionSchedule').textContent = bvisionMode==='cloud'
+    ? 'Online-Eingang: '+bvisionDate(cloudReceivedAt||fetched)+'. Übertragung alle 15 Minuten · Anzeigeabruf manuell über «Aktualisieren».'
+    : bridgeConnected ? 'Lokale Messwertbrücke vorhanden. Für die iPhone-Übertragung die Verbindung ganz unten aktivieren.' : 'Noch keine Online-Messwerte verfügbar.';
+
+}
+
+// Isolated extension reads Bvision's rendered DOM. No Bvision login data is
+// received here. Only whitelisted measurements are accepted and stored locally.
+function acceptBvisionBridge(raw){
+  if(!raw || !raw.stations || typeof raw.stations!=='object' || !Number.isFinite(bvisionTimestamp(raw.updated_at)))return false;
+  const clean={updated_at:raw.updated_at,stations:{}};
+  for(const [key,id] of Object.entries(bvisionStationIds)){
+    const i=raw.stations[key];
+    if(!bvisionIdentity(i,key,id) || !Number.isFinite(bvisionTimestamp(i.observed_at)))continue;
+    clean.stations[key]={station_id:i.station_id,...(!id?{station_name:bvisionStationNames[key]}:{}),observed_at:i.observed_at,
+      road_temperature_c:bvisionTemperature(i.road_temperature_c)?i.road_temperature_c:null,
+      freezing_point_c:bvisionFreezingPoint(i.freezing_point_c)?i.freezing_point_c:null,
+      road_condition:typeof i.road_condition==='string'?i.road_condition.slice(0,100):null,
+      air_temperature_c:bvisionTemperature(i.air_temperature_c)?i.air_temperature_c:null,
+      relative_humidity_pct:typeof i.relative_humidity_pct==='number' && i.relative_humidity_pct>=0 && i.relative_humidity_pct<=100?i.relative_humidity_pct:null};
+    const prior=bvisionData.stations[key];
+    if(prior && bvisionTimestamp(prior.observed_at)>bvisionTimestamp(i.observed_at))clean.stations[key]=prior;
+  }
+  if(!Object.keys(clean.stations).length)return false;
+  clean.stations={...bvisionData.stations,...clean.stations};
+  bvisionData=clean;bvisionMode='browser';
+  try{localStorage.setItem('tsb-bvision-measurements',JSON.stringify(clean));}catch{}
+  return true;
+}
+async function readCloudMeasurements(){
+  if(cloudReadInFlight)return cloudReadInFlight;
+  cloudReadInFlight=(async()=>{
+    try{
+      const {response,data}=await requestJSON('/api/bvision?ts='+Date.now(),{cache:'no-store'},15000);
+      if(!response.ok)throw new Error(response.status===404?'Noch keine Messwerte vom übertragenden PC/NAS empfangen.':'Online-Daten sind momentan nicht erreichbar.');
+      if(!acceptBvisionBridge(data))throw new Error('Online-Daten sind unvollständig.');
+      bvisionMode='cloud';bvisionError='';cloudReadError='';cloudReceivedAt=Date.parse(data.received_at);
+      renderBvision();
+    }catch(error){cloudReadError=error.message;renderBvision();}
+    finally{cloudReadInFlight=null;}
+  })();return cloudReadInFlight;
+}
+async function enableCloudUpload(){
+  const button=$('#enableCloudUpload');button.disabled=true;
+  const status=$('#cloudSetupStatus');
+  try{
+    const response=await fetch('/api/bvision/setup',{method:'POST',credentials:'same-origin',cache:'no-store'});
+    if(response.status===401){status.textContent='Bitte zuerst mit deinem ChatGPT-Eigentümerkonto anmelden und danach erneut aktivieren.';$('#cloudSignIn').hidden=false;return;}
+    if(!response.ok)throw Error('Die Verbindung konnte nicht vorbereitet werden.');
+    const data=await response.json();
+    // The upload token is sent only to the extension on this origin. It is never
+    // inserted into HTML, URLs or logs and is not a Bvision credential.
+    window.postMessage({type:'TSB_CONFIGURE_CLOUD',upload_token:data.upload_token},location.origin);
+    clearTimeout(cloudConfigTimeout);
+    cloudConfigTimeout=setTimeout(()=>{status.textContent='Keine Bestätigung erhalten. Messwertbrücke 1.4 auf dem PC installieren beziehungsweise neu laden, dann erneut aktivieren.';},12000);
+    status.textContent='Aktivierung angefragt. Die neue PC-Erweiterung muss installiert und diese Seite neu geladen sein.';
+  }catch(error){status.textContent=error.message;}
+  finally{button.disabled=false;}
+}
+let bridgeConnected=false;
+let bridgeRefreshUntil=0;
+window.addEventListener('message',event=>{
+  if(event.source!==window || event.origin!==location.origin)return;
+  if(event.data?.type==='TSB_CLOUD_STATUS'){clearTimeout(cloudConfigTimeout); $('#cloudSetupStatus').textContent=event.data.error||'Messwertübertragung aktiviert. Messwerte werden online übertragen.';readCloudMeasurements();return;}
+  if(event.data?.type!=='TSB_EXTENSION_DATA'||Date.now()>bridgeRefreshUntil)return;
+  const payload=event.data.payload;
+  if(!payload || typeof payload!=='object')return;
+  bridgeConnected=true;
+  if(payload.data && bvisionMode!=='cloud')acceptBvisionBridge(payload.data);
+  if(payload.cloud_error)$('#cloudSetupStatus').textContent=payload.cloud_error;
+  if(payload.cloud_uploaded_at){$('#cloudSetupStatus').textContent='Letzte erfolgreiche PC-Übertragung: '+bvisionDate(payload.cloud_uploaded_at)+'.';readCloudMeasurements();}
+  if(bvisionMode!=='cloud')bvisionError=typeof payload.error==='string'?payload.error.slice(0,250):'';
+  if(!payload.data && !bvisionError)bvisionError='Messwertbrücke verbunden. Bvision-Stationen werden geprüft.';
+  bvisionNextAttempt=Number.isFinite(payload.last_attempt)?payload.last_attempt+BVISION_INTERVAL:Date.now()+BVISION_INTERVAL;
+  renderBvision();
+});
+try{acceptBvisionBridge(JSON.parse(localStorage.getItem('tsb-bvision-measurements')));}catch{}
+bvisionError='Messwertbrücke noch nicht verbunden. Einrichtung unten öffnen.';
+renderBvision();
+setInterval(renderBvision,60*1000);
+
+
+// Personal dashboard layout. The server stores only order, disclosure states and widths.
+const TILE_DEFINITIONS=[
+ {key:'ampel',selector:'#ampelBox',title:'Winterdienst-Ampel',icon:'🚦'},
+ {key:'official',selector:'#officialWarnings',title:'MeteoSchweiz-Warnungen',icon:'⚠️'},
+ {key:'weather',selector:'[aria-labelledby="bern-current-title"]',title:'Aktuelles Wetter',icon:'🌤️',wide:true},
+ {key:'warnings',selector:'[aria-labelledby="warnings-title"]',title:'Warnhinweise',icon:'🌨️',wide:true},
+ {key:'stations',selector:'#bvision-module',title:'Glatteis-Frühwarnsysteme',icon:'🛣️',wide:true},
+ {key:'radar',selector:'#radarBern',title:'Wetterradar Schweiz',icon:'📡'},
+ {key:'rain',selector:'#rainMap',title:'Regenmenge',icon:'🌧️'},
+ {key:'webcam-bern',selector:'#webcamBern',title:'Webcam Bern',icon:'📷',closed:true,wide:true,place:'bern'},
+ {key:'webcam-blatten',selector:'#webcamBlatten',title:'Webcam Blatten bei Naters',icon:'📷',closed:true,wide:true,place:'blatten'},
+ {key:'chart',selector:'#chart12Title',parent:true,title:'12-Stunden-Grafik',icon:'📈'},
+ {key:'hourly',selector:'#hourly12Title',parent:true,title:'12-Stunden-Detailprognose',icon:'🕒'},
+ {key:'report',selector:'#weatherReportTitle',parent:true,title:'Wetterlage und Wetterbericht',icon:'🌦️',wide:true},
+ {key:'models',selector:'#weatherModelsTitle',parent:true,title:'Wettermodelle',icon:'🌍',wide:true},
+ {key:'outlook',selector:'.forecast-36',title:'Weiterer Ausblick',icon:'🗓️',wide:true},
+ {key:'winter',selector:'#winterOutlook',title:'Winterwetter · nächste 10 Wochen',icon:'❄️',closed:true,wide:true},
+ {key:'sources',selector:'#sourcesDisclosure',parent:true,title:'Quellen / Datenbasis',icon:'📚',closed:true,wide:true}
+];
+let layoutTiles=[],layoutReady=false,layoutLoaded=false,layoutUser='',layoutLoading=null,layoutDirty=false,layoutApplying=false,layoutEditing=false,layoutSaving=false,layoutRevision=0,layoutSaved=null,layoutDragKey=null;
+function defaultDashboardLayout(){return {version:1,order:TILE_DEFINITIONS.map(tile=>tile.key),open:Object.fromEntries(TILE_DEFINITIONS.map(tile=>[tile.key,!tile.closed])),wide:Object.fromEntries(TILE_DEFINITIONS.map(tile=>[tile.key,!!tile.wide]))};}
+function normalizeDashboardLayout(input){
+  const base=defaultDashboardLayout();
+  if(!input||input.version!==1)return base;
+  if(Array.isArray(input.order))base.order=[...new Set(input.order.filter(key=>base.order.includes(key))),...base.order.filter(key=>!input.order.includes(key))];
+  for(const group of ['open','wide'])for(const [key,value] of Object.entries(input[group]||{}))if(typeof value==='boolean'&&(group==='open'?TILE_DEFINITIONS.some(tile=>key===tile.key||new RegExp('^'+tile.key+'--\\d{1,2}$').test(key)):base.order.includes(key)))base[group][key]=value;
+  return base;
+}
+function dashboardLayoutState(){
+  const state=defaultDashboardLayout();state.order=Array.from($('#dashboardGrid').children).map(root=>root.dataset.tile);
+  for(const tile of layoutTiles){state.wide[tile.key]=tile.root.dataset.wide==='true';for(const item of tile.disclosures)state.open[item.key]=item.node.open;}
+  return state;
+}
+function layoutMessage(message){if(layoutReady)$('#layoutStatus').textContent=message;}
+function layoutControls(){
+  if(!layoutReady)return;
+  $('#saveLayout').disabled=!layoutLoaded||!layoutDirty||layoutSaving;
+  $('#editLayout').disabled=!layoutLoaded||layoutSaving;
+  $('#resetLayout').disabled=!layoutLoaded||layoutSaving;
+  $('#cancelLayout').hidden=!layoutDirty&&!layoutEditing;
+  $('#cancelLayout').disabled=layoutSaving;
+  $('#editLayout').textContent=layoutEditing?'✓ Anordnen beenden':'⠿ Kacheln anordnen';
+  $('#editLayout').setAttribute('aria-pressed',String(layoutEditing));
+  $('#dashboardGrid').classList.toggle('is-editing',layoutEditing);
+  const roots=Array.from($('#dashboardGrid').children).filter(root=>!root.hidden);
+  for(const tile of layoutTiles){tile.root.draggable=layoutEditing;const index=roots.indexOf(tile.root);tile.up.disabled=index<=0;tile.down.disabled=index<0||index===roots.length-1;tile.width.checked=tile.root.dataset.wide==='true';}
+}
+function layoutChanged(){
+  if(layoutApplying||printDetailsState||!layoutLoaded)return;
+  layoutDirty=true;layoutRevision++;layoutMessage('Ansicht geändert. Mit «Ansicht speichern» für dein Konto übernehmen.');layoutControls();
+}
+function applyDashboardLayout(input){
+  if(!layoutReady)return;
+  const layout=normalizeDashboardLayout(input);layoutApplying=true;
+  for(const key of layout.order){const tile=layoutTiles.find(tile=>tile.key===key);if(tile)$('#dashboardGrid').append(tile.root);}
+  for(const tile of layoutTiles){
+    tile.root.dataset.wide=String(layout.wide[tile.key]);
+    for(const item of tile.disclosures){item.node.open=Object.hasOwn(layout.open,item.key)?layout.open[item.key]:false;item.last=item.node.open;}
+    tile.root.dataset.collapsed=String(!tile.details.open);
+  }
+  layoutApplying=false;syncDashboardPlace();layoutControls();
+}
+function syncDashboardPlace(){
+  if(!layoutReady)return;
+  for(const tile of layoutTiles)if(tile.place)tile.root.hidden=tile.place!==selectedPlace().id;
+  layoutControls();
+}
+function moveDashboardTile(key,direction){
+  const tile=layoutTiles.find(tile=>tile.key===key);if(!tile)return;
+  const roots=Array.from($('#dashboardGrid').children).filter(root=>!root.hidden),index=roots.indexOf(tile.root),target=roots[index+direction];
+  if(!target)return;
+  if(direction<0)$('#dashboardGrid').insertBefore(tile.root,target);else $('#dashboardGrid').insertBefore(tile.root,target.nextSibling);
+  layoutChanged();tile.root.querySelector('[data-move="'+(direction<0?'up':'down')+'"]').focus();
+}
+function initDashboardLayout(){
+  if(!document.createElement||!document.querySelectorAll)return;
+  const grid=document.createElement('div');grid.id='dashboardGrid';grid.className='dashboard-grid';
+  const anchor=$('.warning-overview');anchor.before(grid);
+  for(const definition of TILE_DEFINITIONS){
+    let root=$(definition.selector);if(definition.parent)root=root.closest('.panel');
+    if(!root)continue;
+    root.dataset.tile=definition.key;root.classList.add('dashboard-tile','panel');root.classList.remove('section','panel-pad');root.style.marginTop='';
+    let details=Array.from(root.children).find(node=>node.tagName==='DETAILS'),summary;
+    // Reuse a disclosure only when it is the panel's top-level content.
+    if(details&&root.children.length===1){summary=details.querySelector(':scope > summary');}
+    else{
+      details=document.createElement('details');summary=document.createElement('summary');
+      const heading=root.querySelector('h2,.ampel-title'),body=document.createElement('div');
+      if(heading)summary.append(heading);else summary.textContent=definition.title;
+      while(root.firstChild)body.append(root.firstChild);details.append(summary,body);root.append(details);
+    }
+    details.classList.add('tile-disclosure');details.open=!definition.closed;
+    if(definition.place&&summary.firstChild?.nodeType===3)summary.firstChild.textContent=summary.firstChild.textContent.replace(/^\s*📷\s*/, '');
+    const title=document.createElement('span');title.className='tile-title';while(summary.firstChild)title.append(summary.firstChild);
+    const icon=document.createElement('span');icon.className='tile-symbol';icon.textContent=definition.icon;icon.setAttribute('aria-hidden','true');
+    summary.append(icon,title);summary.classList.add('tile-summary');
+    const editor=document.createElement('div');editor.className='tile-editor';
+    const grip=document.createElement('span');grip.className='tile-grip';grip.textContent='⠿ Ziehen';grip.setAttribute('aria-hidden','true');
+    const up=document.createElement('button');up.type='button';up.textContent='↑';up.dataset.move='up';up.setAttribute('aria-label',definition.title+' nach oben verschieben');up.addEventListener('click',()=>moveDashboardTile(definition.key,-1));
+    const down=document.createElement('button');down.type='button';down.textContent='↓';down.dataset.move='down';down.setAttribute('aria-label',definition.title+' nach unten verschieben');down.addEventListener('click',()=>moveDashboardTile(definition.key,1));
+    const label=document.createElement('label'),width=document.createElement('input');width.type='checkbox';label.append(width,document.createTextNode(' Ganze Breite'));width.addEventListener('change',()=>{root.dataset.wide=String(width.checked);layoutChanged();});
+    editor.append(grip,up,down,label);root.prepend(editor);grid.append(root);
+    const disclosures=[{key:definition.key,node:details,last:details.open},...Array.from(details.querySelectorAll('details')).map((node,index)=>({key:definition.key+'--'+index,node,last:node.open}))];
+    const tile={...definition,root,details,disclosures,up,down,width};layoutTiles.push(tile);
+    for(const item of disclosures)item.node.addEventListener('toggle',()=>{if(item.node===details)root.dataset.collapsed=String(!details.open);if(item.last!==item.node.open){item.last=item.node.open;layoutChanged();}});
+    root.addEventListener('dragstart',event=>{
+      if(!layoutEditing||event.target.closest('a,button,input,iframe')||window.getSelection?.().toString()){event.preventDefault();return;}
+      layoutDragKey=definition.key;event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',definition.key);root.classList.add('is-dragging');
+    });
+    root.addEventListener('dragover',event=>{if(layoutDragKey&&layoutDragKey!==definition.key){event.preventDefault();event.dataTransfer.dropEffect='move';root.classList.add('drop-target');}});
+    root.addEventListener('dragleave',()=>root.classList.remove('drop-target'));
+    root.addEventListener('drop',event=>{
+      event.preventDefault();root.classList.remove('drop-target');
+      const source=layoutTiles.find(tile=>tile.key===layoutDragKey);if(!layoutEditing||!source||source.root===root)return;
+      const rect=root.getBoundingClientRect(),before=event.clientY<rect.top+rect.height/2;
+      grid.insertBefore(source.root,before?root:root.nextSibling);layoutDragKey=null;layoutChanged();
+    });
+    root.addEventListener('dragend',()=>{layoutDragKey=null;for(const tile of layoutTiles)tile.root.classList.remove('is-dragging','drop-target');});
+  }
+  for(const wrapper of document.querySelectorAll('.warning-overview,.radar-grid,.chart-grid,.middle-grid,.bottom-grid'))wrapper.remove();
+  // Remove empty section wrappers left by the two lifted panel cards.
+  for(const section of document.querySelectorAll('.page > section.section'))if(!section.children.length)section.remove();
+  layoutReady=true;applyDashboardLayout(defaultDashboardLayout());
+  $('#editLayout').addEventListener('click',()=>{layoutEditing=!layoutEditing;layoutControls();layoutMessage(layoutEditing?'Kacheln ziehen oder mit ↑ ↓ verschieben. Zum Einklappen auf den Kacheltitel klicken.':'Reihenfolge und geöffnete Kacheln mit «Ansicht speichern» übernehmen.');});
+  $('#saveLayout').addEventListener('click',saveDashboardLayout);
+  $('#cancelLayout').addEventListener('click',()=>{applyDashboardLayout(layoutSaved);layoutDirty=false;layoutEditing=false;layoutRevision++;layoutMessage('Gespeicherte Ansicht wiederhergestellt.');layoutControls();});
+  $('#resetLayout').addEventListener('click',()=>{applyDashboardLayout(defaultDashboardLayout());layoutChanged();layoutMessage('Standardansicht eingestellt. Zum Übernehmen «Ansicht speichern» wählen.');});
+  $('#retryLayout').addEventListener('click',()=>loadDashboardLayout(layoutUser,true));
+}
+async function loadDashboardLayout(email,retry=false){
+  if(!layoutReady||(!retry&&email===layoutUser))return layoutLoading;
+  layoutUser=email;layoutLoaded=false;layoutControls();layoutMessage('Deine Ansicht wird geladen.');
+  layoutLoading=(async()=>{
+    try{
+      const {response,data}=await requestJSON('/api/preferences/layout',{cache:'no-store'},10000);
+      if(!response.ok)throw Error(data?.error||'Deine Ansicht konnte nicht geladen werden.');
+      if(layoutUser!==email)return;
+      layoutSaved=normalizeDashboardLayout(data.layout);applyDashboardLayout(layoutSaved);layoutLoaded=true;layoutDirty=false;$('#retryLayout').hidden=true;layoutMessage(data.layout?'Deine gespeicherte Ansicht ist geladen.':'Deine Ansicht: Kacheln anordnen, öffnen oder schliessen und speichern.');
+    }catch(error){layoutMessage(error.message);$('#retryLayout').hidden=false;}
+    finally{layoutControls();layoutLoading=null;}
+  })();return layoutLoading;
+}
+async function saveDashboardLayout(){
+  if(!layoutLoaded||layoutSaving)return;
+  const layout=dashboardLayoutState(),revision=layoutRevision;layoutSaving=true;layoutControls();layoutMessage('Deine Ansicht wird gespeichert.');
+  try{
+    const {response,data}=await requestJSON('/api/preferences/layout',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(layout)},10000);
+    if(!response.ok||!data.ok)throw Error(data?.error||'Speichern fehlgeschlagen. Bitte erneut versuchen.');
+    layoutSaved=normalizeDashboardLayout(data.layout);layoutDirty=layoutRevision!==revision;
+    if(!layoutDirty)layoutEditing=false;
+    layoutMessage(layoutDirty?'Ansicht gespeichert. Neuere Änderungen sind noch nicht gespeichert.':'Ansicht für dein Benutzerkonto gespeichert.');
+  }catch(error){layoutMessage(error.message);}
+  finally{layoutSaving=false;layoutControls();}
+}
+
+let accountState=null;
+async function loadAccount(){
+  try{
+    const {response,data}=await requestJSON('/api/session',{cache:'no-store'},10000);
+    if(!response.ok||!data?.allowed){$('#bvision-setup').hidden=true;window.location?.replace?.('/');return;}
+    accountState=data;
+    loadDashboardLayout(data.user.email);
+    $('#accountInfo').textContent='Angemeldet: '+(data.user.name===data.user.email?data.user.email:data.user.name+' · '+data.user.email)+(data.role==='admin'?' · Hauptadministrator':'');
+    $('#bvision-setup').hidden=data.role!=='admin';
+    if(data.role==='admin')try{await loadAdminUsers();}catch(error){$('#userAdminStatus').textContent=error.message;}
+    else{$('#adminUsers').innerHTML='';$('#inviteResult').hidden=true;$('#inviteLink').value='';}
+  }catch{$('#bvision-setup').hidden=true;$('#accountInfo').textContent='Anmeldestatus derzeit nicht verfügbar.';}
+}
+async function loadAdminUsers(){
+  if(accountState?.role!=='admin')return;
+  const {response,data}=await requestJSON('/api/admin/users',{cache:'no-store'},10000);
+  if(!response.ok||!Array.isArray(data?.users))throw Error('Benutzerliste konnte nicht geladen werden.');
+  $('#adminUsers').innerHTML='<tr><td>'+warningEscape(data.owner)+'</td><td>Hauptadministrator</td><td>Geschützt</td></tr>'+data.users.map(user=>'<tr><td>'+warningEscape(user.email)+'</td><td>Benutzer</td><td><button type="button" data-remove-user="'+warningEscape(user.id)+'" data-user-email="'+warningEscape(user.email)+'">Zugriff entfernen</button></td></tr>').join('');
+}
+async function changeUser(method,input){
+  const response=await fetch('/api/admin/users',{method,credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(input)});
+  const data=await response.json();
+  if(!response.ok||!data.ok)throw Error(data.error||'Benutzer konnte nicht gespeichert werden.');
+  return data;
+}
+$('#inviteUserForm').addEventListener('submit',async event=>{
+  event.preventDefault();if(accountState?.role!=='admin')return;
+  const button=$('#inviteUserButton');button.disabled=true;$('#userAdminStatus').textContent='Benutzer wird freigegeben.';
+  try{
+    const data=await changeUser('POST',{email:$('#inviteUserEmail').value});
+    $('#inviteResult').hidden=false;$('#inviteLink').value=data.invite_url;
+    $('#inviteEmailLink').href='mailto:'+encodeURIComponent(data.email)+'?subject='+encodeURIComponent('Einladung zum Winterdienst Dashboard')+'&body='+encodeURIComponent('Du hast Zugriff auf das Winterdienst Dashboard erhalten. Melde dich mit deinem ChatGPT-Konto und der freigegebenen Adresse '+data.email+' an:\n\n'+data.invite_url+'\n\nWenn du dein Passwort vergessen hast, nutze die Passwort-Wiederherstellung bei der Anmeldung.');
+    $('#userAdminStatus').textContent=(data.already_exists?'Bereits freigegeben: ':'Zugriff freigegeben: ')+data.email+'. Einladungslink kopieren oder E-Mail öffnen.';
+    $('#inviteUserEmail').value='';await loadAdminUsers();
+  }catch(error){$('#userAdminStatus').textContent=error.message;}
+  finally{button.disabled=false;}
+});
+$('#copyInviteLink').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText($('#inviteLink').value);$('#userAdminStatus').textContent='Einladungslink kopiert.';}catch{$('#inviteLink').select();$('#userAdminStatus').textContent='Bitte den markierten Einladungslink kopieren.';}
+});
+$('#adminUsers').addEventListener('click',async event=>{
+  const button=event.target.closest?.('[data-remove-user]');
+  if(!button||accountState?.role!=='admin'||!window.confirm('Zugriff für '+button.dataset.userEmail+' entfernen?'))return;
+  button.disabled=true;
+  try{await changeUser('DELETE',{id:button.dataset.removeUser});$('#inviteResult').hidden=true;await loadAdminUsers();$('#userAdminStatus').textContent='Benutzerzugriff entfernt.';}
+  catch(error){$('#userAdminStatus').textContent=error.message;button.disabled=false;}
+});
+let printDetailsState=null;
+function syncLayoutDisclosureStates(){
+  for(const tile of layoutTiles){for(const item of tile.disclosures)item.last=item.node.open;tile.root.dataset.collapsed=String(!tile.details.open);}
+}
+function preparePrint(){
+  if(printDetailsState)return;
+  printDetailsState=Array.from(document.querySelectorAll?.('details')||[]).filter(item=>!item.closest('#bvision-setup')).map(item=>({item,open:item.open}));
+  for(const {item} of printDetailsState)item.open=true;
+  syncLayoutDisclosureStates();
+}
+function restorePrint(){
+  for(const {item,open} of printDetailsState||[])item.open=open;
+  syncLayoutDisclosureStates();
+  printDetailsState=null;
+}
+window.addEventListener('beforeprint',preparePrint);
+window.addEventListener('afterprint',restorePrint);
+$('#printBtn').addEventListener('click',()=>{preparePrint();window.print();});
+$('#todayLabel').textContent=chTime(new Date());
+$('#nowTime').textContent=timeOnly(new Date());
+setInterval(()=>$('#nowTime').textContent = timeOnly(new Date()), 1000);
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  try{
+    if(navigator.share){ await navigator.share({title:'Meteo Dashboard', url: location.href}); }
+    else if(navigator.clipboard){ await navigator.clipboard.writeText(location.href); alert('Link kopiert'); }
+  }catch(e){}
+});
+let refreshInFlight=null;
+let activeRefreshRun=null;
+function winterAreaActive(){
+ const current=document.body?.dataset?.discipline;if(current)return current==='winter';
+ try{return !['drainage','hazards'].includes(localStorage.getItem('meteo-discipline'));}catch{return true;}
+}
+function pauseWinterRefresh(){activeRefreshRun?.controller.abort();activeRefreshRun=null;refreshInFlight=null;}
+async function refreshDashboard(force=false){
+  if(!winterAreaActive())return;
+  if(refreshInFlight && (force!==true || Date.now()-activeRefreshRun.started<1000))return refreshInFlight;
+  activeRefreshRun?.controller.abort();
+  const run={controller:new AbortController(),place:selectedPlace(),started:Date.now(),current:()=>activeRefreshRun===run};
+  activeRefreshRun=run;
+  loadOfficialWarnings();
+  const button=$('#refreshBtn');
+  button.disabled=false;button.textContent='↻ Seite aktualisieren';
+  button.setAttribute?.('aria-busy','true');
+  $('#weatherRefreshStatus').textContent='Wetter wird abgerufen; Strassenmesswerte werden angefragt.';
+  bridgeRefreshUntil=Date.now()+30000;
+  window.postMessage({type:'TSB_REFRESH_REQUEST'},location.origin);
+  readCloudMeasurements();
+  refreshInFlight=(async()=>{
+    loadSeasonal(run); // Slow long-range data must never hold the refresh button.
+    loadSeasonalUs(run);
+    loadSeasonalEurope(run);
+    try{
+      await load(run);
+      if(!run.current())return;
+      $('#weatherRefreshStatus').textContent='Wetter aktualisiert: '+new Date().toLocaleString('de-CH',{timeZone:'Europe/Zurich',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'})+' Uhr.';
+    }catch{
+      if(!run.current())return;
+      warningFetchFailed=true;renderWarnings();
+      $('#ampelStatus').textContent='OFFEN';$('#ampelStatus').style.color='#526474';
+      $('#ampelBox').style.background='#edf1f4';$('#ampelBox').style.borderColor='#c7d0d8';
+      $('#ampelBox').querySelector('.light').style.background='#8b99a5';
+      $('#ampelExplanation').textContent='Aktueller Wetterabruf fehlgeschlagen';
+      $('#ampelText').dataset.warningColor='neutral';$('#ampelExplanation').dataset.warningColor='neutral';
+      $('#ampelText').textContent='Winterdienst-Ampel derzeit nicht beurteilbar. Letzten Datenstand und örtliche Lage prüfen.';
+      $('#situationBrief').innerHTML='<p>Lagebericht derzeit nicht verfügbar. Der aktuelle Wetterabruf ist fehlgeschlagen.</p>';
+      $('#activeWeatherSources').innerHTML='<b>Verwendete Wetterdaten</b>Aktueller Abruf fehlgeschlagen. Angezeigte Prognosen stammen gegebenenfalls vom letzten erfolgreichen Abruf.';
+      $('#modelSummary').textContent='Aktuell kein Modellvergleich verfügbar.';
+      $('#modelComparison').innerHTML='';
+      $('#weatherRefreshStatus').textContent='Wetter konnte nicht aktualisiert werden. Letzten Datenstand beachten und erneut versuchen.';
+    }finally{
+      if(run.current()){
+        renderBvision();button.setAttribute?.('aria-busy','false');
+        button.disabled=false;button.textContent='↻ Seite aktualisieren';refreshInFlight=null;
+      }
+    }
+  })();
+  return refreshInFlight;
+}
+function applyPlaceLabels(){
+  syncDashboardPlace();
+  $('#bvision-module').hidden=false;
+  $('#stationTitle').textContent='Glatteis-Frühwarnsysteme '+selectedPlace().name;
+  $('#stationOrigin').textContent='MESSWERTWARNUNGEN · '+selectedPlace().name.toUpperCase();
+  $('#stationGrid').dataset.count=String(bvisionPlaceStations[selectedPlace().id].length);
+  renderBvision();
+  $('#webcamBern').hidden=selectedPlace().id!=='bern';
+  $('#webcamBlatten').hidden=selectedPlace().id!=='blatten';
+  const place=selectedPlace();$('#locationSelect').value=place.id;
+  $('#locationSubtitle').textContent='Winterdienst & Strassenzustand';
+  $('#bern-current-title').textContent='Aktuelles Wetter '+place.short;
+  $('#warnings-title').textContent='Warnhinweise '+place.short+' · nächste 6 Stunden';
+  $('#weatherReportTitle').textContent='Wetterlage und Wetterbericht '+place.short;
+  $('#weatherReportSubtitle').textContent='Für die nächsten 6 Stunden · '+place.name+' · aus Wettermodelldaten';
+  $('#chart12Title').textContent='12 Stunden · '+place.name+' · Temperatur, Taupunkt und Niederschlag';
+  $('#hourly12Title').textContent='12 Stunden Detailprognose · '+place.name;
+  $('#forecast36Title').textContent='Weiterer Ausblick · '+place.name+' · acht 6-Stunden-Zeitfenster';
+  $('#forecastCoverage').textContent='Verfügbarkeit der acht Ausblickfenster wird geprüft.';
+  $('#weatherModelsTitle').textContent='Wettermodelle für '+place.short;
+  $('#weatherModelsLocation').textContent='Nächste 6 Stunden · '+place.name+', '+place.lat+'° N / '+place.lon+'° E';
+  $('#radarLocation').textContent='Niederschlagsradar · Übersicht Schweiz · Markierung '+place.name;
+  $('#rainMapLocation').textContent='Niederschlagssumme · Markierung '+place.name;
+  $('#rainMapLink').href='https://www.windy.com/-Rain-accumulation-rainAccu?rainAccu,next12h,'+place.lat+','+place.lon+',6';
+  for(const id of ['radarFrame','rainMapFrame']){
+    const frame=$('#'+id);
+    if(frame?.src){const url=new URL(frame.src);url.searchParams.set('detailLat',place.lat);url.searchParams.set('detailLon',place.lon);frame.src=url.href;}
+  }
+}
+function choosePlace(id){
+  if(!Object.prototype.hasOwnProperty.call(PLACES,id)||id===selectedPlaceId)return refreshInFlight;
+  activeRefreshRun?.controller.abort();activeRefreshRun=null;refreshInFlight=null;
+  selectedPlaceId=id;try{localStorage.setItem('tsb-weather-location',id);}catch{}
+  applyPlaceLabels();
+  warningForecast=null;comparisonForecast=[];warningFetchedAt=0;warningFetchFailed=true;renderWarnings();
+  $('#ampelStatus').textContent='Wird geladen';$('#ampelStatus').style.color='#526474';
+  $('#ampelBox').style.background='#edf1f4';$('#ampelBox').style.borderColor='#c7d0d8';$('#ampelBox').querySelector('.light').style.background='#8b99a5';
+  $('#ampelText').dataset.warningColor='neutral';$('#ampelExplanation').dataset.warningColor='neutral';
+  $('#ampelExplanation').textContent='Wetter für '+selectedPlace().name+' wird geladen';$('#ampelText').textContent='Auswertung nach Eingang der Modelldaten.';
+  $('#situationBrief').innerHTML='<p>Lagebericht für '+warningEscape(selectedPlace().name)+' wird geladen.</p>';
+  for(const id of ['cards','hourlyTable','forecast36','reportList','modelComparison','seasonalSummary','seasonalDetails'])$('#'+id).innerHTML='';
+  $('#modelSummary').textContent='Modelle für '+selectedPlace().name+' werden geprüft.';
+  $('#activeWeatherSources').innerHTML='<b>Verwendete Wetterdaten</b>Abruf für '+selectedPlace().name+' läuft.';
+  $('#seasonalStatus').textContent='Langfristdaten für '+selectedPlace().name+' werden geprüft.';
+  $('#seasonalPeriod').textContent='Grossräumige Tendenzen für die Region '+selectedPlace().name;
+  for(const id of ['chart12','chartTempAxis','chartPrecipAxis']){const canvas=$('#'+id);canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);}
+  $('#lastUpdate').textContent='Letzte Aktualisierung: wird für '+selectedPlace().name+' geladen';
+  return refreshDashboard(true);
+}
+$('#locationSelect').addEventListener('change',()=>choosePlace($('#locationSelect').value));
+initDashboardLayout();
+applyPlaceLabels();
+loadAccount();
+$('#enableCloudUpload').addEventListener('click',enableCloudUpload);
+// Manual refresh is a native GET form navigation. It remains usable even
+// when Safari has suspended scripts or an individual data request is stuck.
+
+// Returning to the page rechecks displayed data age without making network requests.
+function refreshAfterReturn(){renderBvision();renderWarnings();if(officialWarningsFetchedAt&&Date.now()-officialWarningsFetchedAt>10*60000)officialWarningsUnavailable();else renderOfficialWarnings();}
+window.addEventListener('pageshow',refreshAfterReturn);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshAfterReturn();});
+setInterval(()=>{if(officialWarningsFetchedAt&&Date.now()-officialWarningsFetchedAt>10*60000)officialWarningsUnavailable();else renderOfficialWarnings();},60*1000);
+setInterval(renderWarnings,60*1000);
+refreshDashboard();
+</script>
+<script src="./disciplines.js"></script>
+</body>
+</html>
